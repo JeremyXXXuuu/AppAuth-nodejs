@@ -1,11 +1,12 @@
 import {TokenRequestHandler} from './token_request_handler';
 import {AuthorizationRequestHandler, AuthorizationRequestResponse} from './authorization_request_handler';
-import { AuthorizationServiceConfiguration } from './authorization_configuration';
+import { AuthorizationServiceConfiguration } from './authorization_service_configuration';
 import {log} from '../logger';
 import {EventEmitter} from 'events';
 import { AuthorizationRequest } from './authorization_request';
 import { AuthorizationResponse, AuthorizationError } from './authorization_response';
 import { StringMap } from './types';
+import { NodeCrypto } from './crypto_utils';
 class ServerEventsEmitter extends EventEmitter {
     static ON_UNABLE_TO_START = 'unable_to_start';
     static ON_AUTHORIZATION_RESPONSE = 'authorization_response';
@@ -16,9 +17,10 @@ interface AuthState {
     isTokrnRequestComplete: boolean;
 }
 export class Auth {
-
-    authState : AuthState;
-    authorizationServiceConfiguration: AuthorizationServiceConfiguration;
+    authState : AuthState = {
+        isAuthorizationComplete: false,
+        isTokrnRequestComplete: false,
+    };
 
     authorizationRequest: AuthorizationRequest;
     authorizationRequestHandler: AuthorizationRequestHandler;
@@ -34,27 +36,15 @@ export class Auth {
     configuration: AuthorizationServiceConfiguration;
     emmiter: ServerEventsEmitter = new ServerEventsEmitter();
 
-    constructor(openIdConnectUrl: string, clientId: string, redirectUri: string, scope: string, state: string,  responseType: string) {
+    constructor(openIdConnectUrl: string, clientId: string, redirectUri: string, scope: string,  responseType: string) {
         this.openIdConnectUrl = openIdConnectUrl;
         this.authorizationRequest = new AuthorizationRequest({
             client_id: clientId,
             redirect_uri: redirectUri,
             scope: scope,
             response_type: responseType,
-            state: state,
-        });
-
-        this.emmiter.once(ServerEventsEmitter.ON_AUTHORIZATION_RESPONSE, (res: AuthorizationRequestResponse) => {
-            log('Authorization request complete ',  res);
-            this.authorizationResponse = res.response;
-            this.authorizationError = res.error;
-            this.authState.isAuthorizationComplete = true;
-
-            if (this.authorizationResponse) {
-                this.tokenRequest(this.authorizationResponse.code, this.authorizationRequest.internal.code_verifier);
-            }
-
-        });
+            state: undefined,
+        }, new NodeCrypto());
 
         this.authorizationRequestHandler = new AuthorizationRequestHandler(8000, this.emmiter);
     }
@@ -74,20 +64,35 @@ export class Auth {
       }
 
     async authRequest(): Promise<void> {
-        log('Making authorization request', this.authorizationRequest);
-        if (!this.configuration) {
-            log("Unknown service configuration");
-            return;
-          }
-        const request = await this.authorizationRequestHandler.performAuthorizationRequest(
-            this.configuration,
-            this.authorizationRequest,
-        );
+
+      if (!this.authorizationRequestHandler.authorizationPromise) {
+        log('Authorization request handler is not ready');
+      }
+      // this.emmiter.once(ServerEventsEmitter.ON_AUTHORIZATION_RESPONSE, (res: AuthorizationRequestResponse) => {
+      //   log('Authorization request complete form AUTH', res);
+      // });
+      if (!this.configuration) {
+        log("Unknown service configuration");
+        return;
+      }
+      log('Making authorization request', this.authorizationRequest);
+      this.authorizationRequestHandler.performAuthorizationRequest(
+        this.configuration,
+        this.authorizationRequest,
+      );
+      const result = await this.authorizationRequestHandler.authorizationPromise;
+      this.authorizationResponse = result.response;
+      this.authorizationError = result.error;
+      this.authState.isAuthorizationComplete = true;
     }
 
-    async tokenRequest(code: string, codeVerifier: string): Promise<void> {
-
+    getCode(): string {
+      return this.authorizationResponse.code;
     }
+
+    // async tokenRequest(code: string, codeVerifier: string): Promise<void> {
+
+    // }
 
 }
 

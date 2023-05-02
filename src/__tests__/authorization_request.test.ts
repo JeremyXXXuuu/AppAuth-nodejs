@@ -8,7 +8,7 @@ describe("AuthorizationRequest", () => {
     const state = 'state';
     const extras: StringMap = {key: 'value'};
 
-    let jsonRequest: AuthorizationRequestJson = {
+    const jsonRequest: AuthorizationRequestJson = {
         client_id: clientId,
         redirect_uri: redirectUri,
         response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
@@ -16,8 +16,8 @@ describe("AuthorizationRequest", () => {
         state: state,
         extras: extras
       };
-    
-      let jsonRequest2: AuthorizationRequestJson = {
+
+      const jsonRequest2: AuthorizationRequestJson = {
         client_id: clientId,
         redirect_uri: redirectUri,
         response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
@@ -25,8 +25,8 @@ describe("AuthorizationRequest", () => {
         state: undefined,
         extras: extras
       };
-    
-      let jsonRequest3: AuthorizationRequestJson = {
+
+      const jsonRequest3: AuthorizationRequestJson = {
         client_id: clientId,
         redirect_uri: redirectUri,
         response_type: AuthorizationRequest.RESPONSE_TYPE_TOKEN,
@@ -34,9 +34,9 @@ describe("AuthorizationRequest", () => {
         state: undefined,
         extras: extras
       };
-      let request: AuthorizationRequest = new AuthorizationRequest(jsonRequest);
-      let request2: AuthorizationRequest = new AuthorizationRequest(jsonRequest2);
-      let request3: AuthorizationRequest = new AuthorizationRequest(jsonRequest3);
+      const request: AuthorizationRequest = new AuthorizationRequest(jsonRequest);
+      const request2: AuthorizationRequest = new AuthorizationRequest(jsonRequest2);
+      const request3: AuthorizationRequest = new AuthorizationRequest(jsonRequest3);
 
     it("should be able to construct a request", () => {
         expect(request).toBeDefined();
@@ -50,9 +50,9 @@ describe("AuthorizationRequest", () => {
     });
     it('To Json() and from Json() should work', () => {
         request.toJson().then(result => {
-          let json = JSON.parse(JSON.stringify(result));
+          const json = JSON.parse(JSON.stringify(result));
           expect(json).not.toBeNull();
-          let newRequest = new AuthorizationRequest(json);
+          const newRequest = new AuthorizationRequest(json);
           expect(newRequest).not.toBeNull();
           expect(newRequest.responseType).toBe(AuthorizationRequest.RESPONSE_TYPE_CODE);
           expect(newRequest.clientId).toBe(clientId);
@@ -60,7 +60,7 @@ describe("AuthorizationRequest", () => {
           expect(newRequest.scope).toBe(scope);
           expect(newRequest.state).toBe(state);
           expect(newRequest.extras).toBeTruthy();
-          expect(newRequest.extras!['key']).toBe('value');
+          expect(newRequest.extras?.['key']).toBe('value');
           expect(newRequest.extras).toEqual(request.extras);
           expect(newRequest.internal).toEqual(request.internal);
         });
