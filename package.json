@@ -1,0 +1,21 @@
+{
+  "name": "@orosound/template-repo-node",
+  "version": "0.1.0",
+  "description": "Orosound template repo",
+  "main": "dist/index.js",
+  "scripts": {
+    "compile": "tsc",
+    "build": "yarn compile",
+    "clean": "rm -rf dist",
+    "test": "node dist/tests/test.js",
+    "package": "yarn compile && yarn publish"
+  },
+  "keywords": [],
+  "repository": "git@github.com:orosound/template-repo-node.git",
+  "author": "Orosound <contact@orosound.com>",
+  "license": "UNLICENSED",
+  "private": true,
+  "devDependencies": {
+    "typescript": "^4.9.4"
+  }
+}

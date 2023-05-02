@@ -1,0 +1,28 @@
+# build
+dist/
+
+# environment files
+.env
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+.env.local
+
+# logs files
+*.log
+log/
+logs/
+
+# modules
+node_modules/
+
+# yarn
+yarn-debug.log*
+yarn-error.log*
+
+# user settings
+.vscode/
+.usersettings/
