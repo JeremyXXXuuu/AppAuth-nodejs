@@ -15,7 +15,7 @@ export interface AuthorizationErrorJson {
     error_uri?: string;
     state?: string;
   }
-  
+
   /**
  * Represents the Authorization Response type.
  * For more information look at
@@ -24,17 +24,17 @@ export interface AuthorizationErrorJson {
 export class AuthorizationResponse {
     code: string;
     state: string;
-  
+
     constructor(response: AuthorizationResponseJson) {
       this.code = response.code;
       this.state = response.state;
     }
-  
+
     toJson(): AuthorizationResponseJson {
       return {code: this.code, state: this.state};
     }
   }
-  
+
 
   /**
  * Represents the Authorization error response.
@@ -46,14 +46,14 @@ export class AuthorizationError {
     errorDescription?: string;
     errorUri?: string;
     state?: string;
-  
+
     constructor(error: AuthorizationErrorJson) {
       this.error = error.error;
       this.errorDescription = error.error_description;
       this.errorUri = error.error_uri;
       this.state = error.state;
     }
-  
+
     toJson(): AuthorizationErrorJson {
       return {
         error: this.error,

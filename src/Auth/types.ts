@@ -3,7 +3,7 @@ export interface StringMap {
   }
 
 
-  
+
 /**
  * Represents a window.location like object.
  */
@@ -18,4 +18,3 @@ export interface LocationLike {
     search: string;
     assign(url: string): void;
   }
-  

@@ -30,11 +30,11 @@ const newState = function(crypto: Crypto): string {
 export class AuthorizationRequest {
     static RESPONSE_TYPE_TOKEN = 'token';
     static RESPONSE_TYPE_CODE = 'code';
-  
+
     // NOTE:
     // Both redirect_uri and state are actually optional.
     // However AppAuth is more opionionated, and requires you to use both.
-  
+
     clientId: string;
     redirectUri: string;
     scope: string;
@@ -60,7 +60,7 @@ export class AuthorizationRequest {
       // read internal properties if available
       this.internal = request.internal;
     }
-  
+
     async setupCodeVerifier(): Promise<void> {
       if (!this.usePkce) {
         return Promise.resolve();
@@ -83,7 +83,7 @@ export class AuthorizationRequest {
           }
       }
     }
-  
+
     /**
      * Serializes the AuthorizationRequest to a JavaScript Object.
      */
@@ -101,4 +101,3 @@ export class AuthorizationRequest {
         };
     }
   }
-  

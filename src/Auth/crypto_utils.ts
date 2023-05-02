@@ -51,7 +51,7 @@ export class NodeCrypto implements Crypto {
       const bytes = crypto.randomBytes(size);
       return bufferToString(new Uint8Array(bytes.buffer));
     }
-  
+
     deriveChallenge(code: string): Promise<string> {
       const hash = crypto.createHash('sha256').update(code).digest();
       return Promise.resolve(urlSafe(new Uint8Array(hash.buffer)));

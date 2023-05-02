@@ -10,7 +10,7 @@ export interface AuthorizationServiceConfigurationJson {
     end_session_endpoint?: string;
     userinfo_endpoint?: string;
   }
-  
+
   /**
  * The standard base path for well-known resources on domains.
  * See https://tools.ietf.org/html/rfc5785 for more information.

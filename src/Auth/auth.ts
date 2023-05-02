@@ -59,7 +59,7 @@ export class Auth {
         this.authorizationRequestHandler = new AuthorizationRequestHandler(8000, this.emmiter);
     }
 
-    
+
 
     async fetchServiceConfiguration(): Promise<void> {
         log("Fetching service configuration", this.openIdConnectUrl)
