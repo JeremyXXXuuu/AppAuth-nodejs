@@ -53,14 +53,14 @@ export class AuthorizationServiceConfiguration {
     };
   }
 
-  static fetchFromIssuer(openIdIssuerUrl: string, requestor?: Requestor):
+  static async fetchFromIssuer(openIdIssuerUrl: string, requestor?: Requestor):
       Promise<AuthorizationServiceConfiguration> {
     const fullUrl = `${openIdIssuerUrl}/${WELL_KNOWN_PATH}/${OPENID_CONFIGURATION}`;
 
     const requestorToUse = requestor || new FetchRequestor();
 
-    return requestorToUse
-        .xhr<AuthorizationServiceConfigurationJson>({url: fullUrl, dataType: 'json', method: 'GET'})
-        .then(json => new AuthorizationServiceConfiguration(json));
+    const json = await requestorToUse
+      .xhr<AuthorizationServiceConfigurationJson>({ url: fullUrl, dataType: 'json', method: 'GET' });
+    return new AuthorizationServiceConfiguration(json);
   }
 }
