@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "OIDC Client for nodejs",
   "scripts": {
-    "test": "jest --coverage",
+    "test": "jest",
     "compile": "tsc",
     "build": "yarn compile",
     "clean": "rm -rf dist",
