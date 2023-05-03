@@ -7,6 +7,8 @@ import { AuthorizationRequest } from './authorization_request';
 import { AuthorizationResponse, AuthorizationError } from './authorization_response';
 import { StringMap } from './types';
 import { NodeCrypto } from './crypto_utils';
+import { GRANT_TYPE_AUTHORIZATION_CODE, TokenRequest } from './token_request';
+import { TokenError, TokenResponse } from './token_response';
 class ServerEventsEmitter extends EventEmitter {
     static ON_UNABLE_TO_START = 'unable_to_start';
     static ON_AUTHORIZATION_RESPONSE = 'authorization_response';
@@ -28,15 +30,17 @@ export class Auth {
     authorizationResponse: AuthorizationResponse;
     authorizationError: AuthorizationError;
 
+    tokenRequest: TokenRequest;
     tokenRequestHandler: TokenRequestHandler;
 
-    // tokenResponse: TokenResponse,
-    // tokenError: TokenError,
+    tokenResponse: TokenResponse;
+    tokenError: TokenError;
+
     openIdConnectUrl: string;
     configuration: AuthorizationServiceConfiguration;
     emmiter: ServerEventsEmitter = new ServerEventsEmitter();
 
-    constructor(openIdConnectUrl: string, clientId: string, redirectUri: string, scope: string,  responseType: string) {
+    constructor(openIdConnectUrl: string, clientId: string, redirectUri: string, scope: string,  responseType: string, extras?: StringMap) {
         this.openIdConnectUrl = openIdConnectUrl;
         this.authorizationRequest = new AuthorizationRequest({
             client_id: clientId,
@@ -44,10 +48,21 @@ export class Auth {
             scope: scope,
             response_type: responseType,
             state: undefined,
+            extras: extras,
         }, new NodeCrypto());
 
+        this.tokenRequest = new TokenRequest({
+          client_id: clientId,
+          redirect_uri: redirectUri,
+          grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
+          code: undefined,
+          refresh_token: undefined,
+          extras: undefined
+        });
+
         this.authorizationRequestHandler = new AuthorizationRequestHandler(8000, this.emmiter);
-    }
+        this.tokenRequestHandler = new TokenRequestHandler();
+      }
 
 
 
@@ -63,14 +78,10 @@ export class Auth {
         }
       }
 
-    async authRequest(): Promise<void> {
-
+    async makeAuthRequest(): Promise<void> {
       if (!this.authorizationRequestHandler.authorizationPromise) {
         log('Authorization request handler is not ready');
       }
-      // this.emmiter.once(ServerEventsEmitter.ON_AUTHORIZATION_RESPONSE, (res: AuthorizationRequestResponse) => {
-      //   log('Authorization request complete form AUTH', res);
-      // });
       if (!this.configuration) {
         log("Unknown service configuration");
         return;
@@ -90,9 +101,39 @@ export class Auth {
       return this.authorizationResponse.code;
     }
 
-    // async tokenRequest(code: string, codeVerifier: string): Promise<void> {
+    async makeTokenRequest(): Promise<void> {
+      if (!this.configuration) {
+        log("Unknown service configuration");
+        return;
+      }
+      if(!this.authState.isAuthorizationComplete) {
+        log('Authorization is not complete, cannot make token request');
+        return;
+      }
+      let extras: StringMap|undefined = undefined;
+      if (this.authorizationRequest && this.authorizationRequest.internal) {
+        extras = {};
+        extras['code_verifier'] = this.authorizationRequest.internal['code_verifier'];
+      }
+      this.tokenRequest.code = this.authorizationResponse.code;
+      this.tokenRequest.extras = extras;
+      log('Making token request', this.tokenRequest);
+      const response = await this.tokenRequestHandler.performTokenRequest(this.configuration, this.tokenRequest);
+      this.tokenResponse = response;
+      log('Token response', this.tokenResponse);
+      this.authState.isTokrnRequestComplete = true;
+      log('Refresh token is', this.tokenResponse.refreshToken);
+      
+    }
 
-    // }
-
+    async refreshAccessToken(): Promise<void> {
+      let request = this.tokenRequest;
+      request.code = undefined;
+      request.refreshToken = this.tokenResponse.refreshToken;
+      request.extras = undefined;
+      const response = await this.tokenRequestHandler.performTokenRequest(this.configuration, request);
+      this.tokenResponse = response;
+      log('Access Token is', this.tokenResponse.accessToken);
+    }
 }
 
