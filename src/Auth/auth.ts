@@ -7,7 +7,7 @@ import { AuthorizationRequest } from './authorization_request';
 import { AuthorizationResponse, AuthorizationError } from './authorization_response';
 import { StringMap } from './types';
 import { NodeCrypto } from './crypto_utils';
-import { GRANT_TYPE_AUTHORIZATION_CODE, TokenRequest } from './token_request';
+import { GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, TokenRequest } from './token_request';
 import { TokenError, TokenResponse } from './token_response';
 class ServerEventsEmitter extends EventEmitter {
     static ON_UNABLE_TO_START = 'unable_to_start';
@@ -127,10 +127,28 @@ export class Auth {
     }
 
     async refreshAccessToken(): Promise<void> {
+      if(!this.authState.isTokrnRequestComplete) {
+        log('Token request is not complete, cannot refresh access token');
+        return;
+      }
+      if (!this.configuration) {
+        log("Unknown service configuration");
+        return;
+      }
+      if(!this.tokenResponse.refreshToken) {
+        log('Refresh token is not available, cannot refresh access token');
+        return;
+      }
+      if(this.tokenResponse && this.tokenResponse.isValid()) {
+        log('Access token is still valid, no need to refresh');
+        return;
+      }
       let request = this.tokenRequest;
       request.code = undefined;
       request.refreshToken = this.tokenResponse.refreshToken;
       request.extras = undefined;
+      request.grantType = GRANT_TYPE_REFRESH_TOKEN;
+      log('Refreshing access token', request);
       const response = await this.tokenRequestHandler.performTokenRequest(this.configuration, request);
       this.tokenResponse = response;
       log('Access Token is', this.tokenResponse.accessToken);
