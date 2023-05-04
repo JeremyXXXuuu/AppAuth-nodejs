@@ -1,8 +1,7 @@
 import { AuthorizationServiceConfiguration } from "./authorization_service_configuration";
-import { TokenRequest, TokenRequestJson } from "./token_request";
+import { TokenRequest } from "./token_request";
 import {
-  RevokeTokenRequest,
-  RevokeTokenRequestJson,
+  RevokeTokenRequest
 } from "./revoke_token_request";
 import { Requestor, FetchRequestor } from "./xhr";
 import { QueryStringUtils, BasicQueryStringUtils } from "./query_string_utils";
@@ -47,14 +46,14 @@ export class TokenRequestHandler implements TokenRequestHandler {
     configuration: AuthorizationServiceConfiguration,
     request: RevokeTokenRequest
   ): Promise<boolean> {
-    let revokeTokenResponse = this.requestor.xhr<boolean>({
+    const revokeTokenResponse = this.requestor.xhr<boolean>({
       url: configuration.revocationEndpoint,
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       data: this.utils.stringify(request.toStringMap()),
     });
 
-    const response = await revokeTokenResponse;
+    await revokeTokenResponse;
     return true;
   }
 
@@ -62,7 +61,7 @@ export class TokenRequestHandler implements TokenRequestHandler {
     configuration: AuthorizationServiceConfiguration,
     request: TokenRequest
   ): Promise<TokenResponse> {
-    let tokenResponse = this.requestor.xhr<TokenResponseJson | TokenErrorJson>({
+    const tokenResponse = this.requestor.xhr<TokenResponseJson | TokenErrorJson>({
       url: configuration.tokenEndpoint,
       method: "POST",
       dataType: "json", // adding implicit dataType

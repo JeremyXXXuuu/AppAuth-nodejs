@@ -37,7 +37,7 @@ export class RevokeTokenRequest {
    * Serializes a TokenRequest to a JavaScript object.
    */
   toJson(): RevokeTokenRequestJson {
-    let json: RevokeTokenRequestJson = {token: this.token};
+    const json: RevokeTokenRequestJson = {token: this.token};
     if (this.tokenTypeHint) {
       json['token_type_hint'] = this.tokenTypeHint;
     }
@@ -51,7 +51,7 @@ export class RevokeTokenRequest {
   }
 
   toStringMap(): StringMap {
-    let json = this.toJson();
+    const json = this.toJson();
     // :(
     return (json as any);
   }

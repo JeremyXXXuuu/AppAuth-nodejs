@@ -3,14 +3,14 @@ import * as base64 from 'base64-js';
 import * as crypto from 'crypto';
 import {AppAuthError} from './error';
 
-const HAS_CRYPTO = typeof window !== 'undefined' && !!(window.crypto as any);
-const HAS_SUBTLE_CRYPTO = HAS_CRYPTO && !!(window.crypto.subtle as any);
+const HAS_CRYPTO = typeof window !== 'undefined' && !!(window.crypto as unknown);
+const HAS_SUBTLE_CRYPTO = HAS_CRYPTO && !!(window.crypto.subtle as unknown);
 const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-export function bufferToString(buffer: Uint8Array) {
-  let state = [];
+export function bufferToString(buffer: Uint8Array): string {
+  const state = [];
   for (let i = 0; i < buffer.byteLength; i += 1) {
-    let index = buffer[i] % CHARSET.length;
+    const index = buffer[i] % CHARSET.length;
     state.push(CHARSET[index]);
   }
   return state.join('');
@@ -24,7 +24,7 @@ export function urlSafe(buffer: Uint8Array): string {
 // adapted from source: http://stackoverflow.com/a/11058858
 // this is used in place of TextEncode as the api is not yet
 // well supported: https://caniuse.com/#search=TextEncoder
-export function textEncodeLite(str: string) {
+export function textEncodeLite(str: string): Uint8Array {
   const buf = new ArrayBuffer(str.length);
   const bufView = new Uint8Array(buf);
 
@@ -63,7 +63,7 @@ export class NodeCrypto implements Crypto {
  * This uses the capabilities of the browser.
  */
 export class DefaultCrypto implements Crypto {
-  generateRandom(size: number) {
+  generateRandom(size: number): string {
     const buffer = new Uint8Array(size);
     if (HAS_CRYPTO) {
       window.crypto.getRandomValues(buffer);

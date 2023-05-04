@@ -34,15 +34,15 @@ export interface TokenErrorJson {
     error_description?: string;
     error_uri?: string;
   }
-  
+
   // constants
   const AUTH_EXPIRY_BUFFER = 10 * 60 * -1;  // 10 mins in seconds
-  
+
   /**
    * Returns the instant of time in seconds.
    */
-  export const nowInSeconds = () => Math.round(new Date().getTime() / 1000);
-  
+  export const nowInSeconds = (): number => Math.round(new Date().getTime() / 1000);
+
   /**
    * Represents the Token Response type.
    * For more information look at:
@@ -56,7 +56,7 @@ export interface TokenErrorJson {
     scope: string|undefined;
     idToken: string|undefined;
     issuedAt: number;
-  
+
     constructor(response: TokenResponseJson) {
       this.accessToken = response.access_token;
       this.tokenType = response.token_type || 'bearer';
@@ -68,7 +68,7 @@ export interface TokenErrorJson {
       this.idToken = response.id_token;
       this.issuedAt = response.issued_at || nowInSeconds();
     }
-  
+
     toJson(): TokenResponseJson {
       return {
         access_token: this.accessToken,
@@ -80,17 +80,17 @@ export interface TokenErrorJson {
         expires_in: this.expiresIn?.toString()
       };
     }
-  
+
     isValid(buffer: number = AUTH_EXPIRY_BUFFER): boolean {
       if (this.expiresIn) {
-        let now = nowInSeconds();
+        const now = nowInSeconds();
         return now < this.issuedAt + this.expiresIn + buffer;
       } else {
         return true;
       }
     }
   }
-  
+
   /**
    * Represents the Token Error type.
    * For more information look at:
@@ -100,17 +100,16 @@ export interface TokenErrorJson {
     error: ErrorType;
     errorDescription: string|undefined;
     errorUri: string|undefined;
-  
+
     constructor(tokenError: TokenErrorJson) {
       this.error = tokenError.error;
       this.errorDescription = tokenError.error_description;
       this.errorUri = tokenError.error_uri;
     }
-  
+
     toJson(): TokenErrorJson {
       return {
         error: this.error, error_description: this.errorDescription, error_uri: this.errorUri
       }
     }
   }
-  

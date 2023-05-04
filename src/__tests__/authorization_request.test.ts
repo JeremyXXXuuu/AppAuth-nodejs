@@ -1,7 +1,7 @@
 import { AuthorizationRequest, AuthorizationRequestJson } from "../Auth/authorization_request";
 import { StringMap } from "../Auth/types";
 
-describe("AuthorizationRequest", () => {
+describe("Authorization Request Tests", () => {
     const clientId = 'client_id';
     const redirectUri = 'http://my/redirect_uri';
     const scope = 'scope';

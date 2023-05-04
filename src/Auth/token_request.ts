@@ -26,7 +26,7 @@ export class TokenRequest {
     code: string|undefined;
     refreshToken: string|undefined;
     extras: StringMap|undefined
-  
+
     constructor(request: TokenRequestJson) {
       this.clientId = request.client_id;
       this.redirectUri = request.redirect_uri;
@@ -35,7 +35,7 @@ export class TokenRequest {
       this.refreshToken = request.refresh_token;
       this.extras = request.extras;
     }
-  
+
     /**
      * Serializes a TokenRequest to a JavaScript object.
      */
@@ -49,25 +49,26 @@ export class TokenRequest {
         extras: this.extras
       };
     }
-  
+
     toStringMap(): StringMap {
-      let map: StringMap = {
+      const map: StringMap = {
         grant_type: this.grantType,
         client_id: this.clientId,
         redirect_uri: this.redirectUri
       };
-  
+
       if (this.code) {
         map['code'] = this.code;
       }
-  
+
       if (this.refreshToken) {
         map['refresh_token'] = this.refreshToken;
       }
-  
+
       // copy over extras
       if (this.extras) {
-        for (let extra in this.extras) {
+        for (const extra in this.extras) {
+          // eslint-disable-next-line no-prototype-builtins
           if (this.extras.hasOwnProperty(extra) && !map.hasOwnProperty(extra)) {
             // check before inserting to requestMap
             map[extra] = this.extras[extra];
@@ -77,4 +78,3 @@ export class TokenRequest {
       return map;
     }
 }
-  
