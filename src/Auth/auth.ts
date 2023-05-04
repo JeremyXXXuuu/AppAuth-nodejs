@@ -1,8 +1,8 @@
-import {TokenRequestHandler} from './token_request_handler';
-import {AuthorizationRequestHandler, AuthorizationRequestResponse} from './authorization_request_handler';
+import { TokenRequestHandler } from './token_request_handler';
+import { AuthorizationRequestHandler } from './authorization_request_handler';
 import { AuthorizationServiceConfiguration } from './authorization_service_configuration';
-import {log} from '../logger';
-import {EventEmitter} from 'events';
+import { log } from '../logger';
+import { EventEmitter } from 'events';
 import { AuthorizationRequest } from './authorization_request';
 import { AuthorizationResponse, AuthorizationError } from './authorization_response';
 import { StringMap } from './types';
@@ -123,7 +123,7 @@ export class Auth {
       log('Token response', this.tokenResponse);
       this.authState.isTokrnRequestComplete = true;
       log('Refresh token is', this.tokenResponse.refreshToken);
-      
+
     }
 
     async refreshAccessToken(): Promise<void> {
@@ -143,7 +143,7 @@ export class Auth {
         log('Access token is still valid, no need to refresh');
         return;
       }
-      let request = this.tokenRequest;
+      const request = this.tokenRequest;
       request.code = undefined;
       request.refreshToken = this.tokenResponse.refreshToken;
       request.extras = undefined;
