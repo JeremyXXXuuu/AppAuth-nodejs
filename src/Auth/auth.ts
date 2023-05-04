@@ -126,7 +126,7 @@ export class Auth {
 
     }
 
-    async refreshAccessToken(): Promise<void> {
+    async refreshAccessToken(): Promise<string> {
       if(!this.authState.isTokrnRequestComplete) {
         log('Token request is not complete, cannot refresh access token');
         return;
@@ -141,7 +141,7 @@ export class Auth {
       }
       if(this.tokenResponse && this.tokenResponse.isValid()) {
         log('Access token is still valid, no need to refresh');
-        return;
+        return this.tokenResponse.accessToken;
       }
       const request = this.tokenRequest;
       request.code = undefined;
@@ -152,6 +152,31 @@ export class Auth {
       const response = await this.tokenRequestHandler.performTokenRequest(this.configuration, request);
       this.tokenResponse = response;
       log('Access Token is', this.tokenResponse.accessToken);
+      return this.tokenResponse.accessToken;
+    }
+
+    async performWithToken<T>(callback: (accessToken: string) => Promise<T>): Promise<T> {
+      const accessToken = await this.refreshAccessToken();
+      if (typeof accessToken === 'string') {
+        return callback(accessToken);
+      } else {
+        throw new Error('Access token is not available');
+      }
+    }
+
+    async fetchUserInfo(): Promise<JSON> {
+      const response = await this.performWithToken(async (accessToken) => {
+        const request =
+        new Request('https://staging.auth.orosound.com/me', {
+          headers: new Headers({ 'Authorization': `Bearer ${accessToken}` }),
+          method: 'GET',
+          cache: 'no-cache'
+        });
+        const response = await fetch(request);
+        const json = await response.json();
+        return json;
+      });
+      return response;
     }
 }
 
