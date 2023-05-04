@@ -1,0 +1,14 @@
+# hidden directories
+.vscode/
+.github/
+
+# directories
+src/
+node_modules/
+
+# hidden files
+.editorconfig
+.gitattributes
+
+# files
+tsconfig.json

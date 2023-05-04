@@ -1,0 +1,14 @@
+changelog:
+  categories:
+    - title: ✨ Features
+      labels:
+        - ✨ feature
+    - title: ⚙️ Changes
+      labels:
+        - ⚙️ change
+    - title: 🐛 Bugs
+      labels:
+        - 🐛 bug
+    - title: 📘 Documentation
+      labels:
+        - 📘 doc
