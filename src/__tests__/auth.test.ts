@@ -69,4 +69,14 @@ describe('Auth tests', () => {
         expect(authFlow.authState.isAuthorizationComplete).toBe(true);
       });
     });
+
+    describe("User Info Request", () => {
+      it("fetchUserInfo should work", async () => {
+        const userInfo = await authFlow.fetchUserInfo();
+        expect(userInfo).toBeTruthy();
+        expect(userInfo).toHaveProperty("sub");
+        expect(userInfo).toHaveProperty("email");
+        expect(userInfo).toHaveProperty("profile");
+      });
+    });
 });
