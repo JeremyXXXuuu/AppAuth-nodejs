@@ -71,4 +71,8 @@ async function auth(){
     console.log(authFlow.tokenResponse);
 }
 ```
+### LOG Mode
+```bash
+IS_LOG = true
+```
 

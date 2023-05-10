@@ -2,7 +2,7 @@ import { Auth } from "../Auth/auth";
 import { StringMap } from "../Auth/types";
 
 describe('Auth tests', () => {
-    const openIdConnectUrl = 'http://localhost:8001'||"https://staging.auth.orosound.com";
+    const openIdConnectUrl = "https://staging.auth.orosound.com";
     const clientId = "foo";
     const redirectUri = "http://127.0.0.1:8000";
     const scope = "openid profile email offline_access";
