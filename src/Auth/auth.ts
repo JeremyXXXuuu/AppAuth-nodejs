@@ -164,9 +164,17 @@ export class Auth {
     }
 
     async fetchUserInfo(): Promise<JSON> {
+      if (!this.configuration) {
+        log("Unknown service configuration");
+        return;
+      }
+      if(!this.authState.isTokrnRequestComplete) {
+        log('Token request is not complete, cannot fetch user info');
+        return;
+      }
       const response = await this.performWithToken(async (accessToken) => {
         const request =
-        new Request('https://staging.auth.orosound.com/me', {
+        new Request(this.configuration.userInfoEndpoint, {
           headers: new Headers({ 'Authorization': `Bearer ${accessToken}` }),
           method: 'GET',
           cache: 'no-cache'
@@ -176,6 +184,12 @@ export class Auth {
         return json;
       });
       return response;
+    }
+
+    async logout(): Promise<void> {
+      this.authState.isAuthorizationComplete = false;
+      this.authState.isTokrnRequestComplete = false;
+      opener(this.configuration.endSessionEndpoint);
     }
 }
 

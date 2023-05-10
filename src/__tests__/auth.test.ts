@@ -7,7 +7,7 @@ describe('Auth tests', () => {
     const redirectUri = "http://127.0.0.1:8000";
     const scope = "openid profile email offline_access";
     const responseType = "code";
-    const extras: StringMap = { prompt: "consent", access_type: "offline" };
+    const extras: StringMap = { prompt: "consent", access_type: "offline_access" };
     const authFlow = new Auth(openIdConnectUrl, clientId, redirectUri, scope, responseType, extras);
 
     it('Initialization should work', () => {
@@ -77,6 +77,14 @@ describe('Auth tests', () => {
         expect(userInfo).toHaveProperty("sub");
         expect(userInfo).toHaveProperty("email");
         expect(userInfo).toHaveProperty("profile");
+      });
+    });
+
+    describe("Sign Out Request", () => {
+      it("makeSignOutRequest should work", async () => {
+        await authFlow.logout();
+        expect(authFlow.authState.isAuthorizationComplete).toBe(false);
+        expect(authFlow.authState.isTokrnRequestComplete).toBe(false);
       });
     });
 });
