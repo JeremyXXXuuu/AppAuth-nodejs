@@ -55,6 +55,7 @@ export class Auth {
 
         this.tokenRequest = new TokenRequest({
           client_id: clientId,
+          client_secret: undefined,
           redirect_uri: redirectUri,
           grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
           code: undefined,
@@ -68,12 +69,13 @@ export class Auth {
 
 
 
-    async fetchServiceConfiguration(): Promise<void> {
+    async fetchServiceConfiguration(): Promise<AuthorizationServiceConfiguration> {
         log("Fetching service configuration", this.openIdConnectUrl)
         try {
             const response = await AuthorizationServiceConfiguration.fetchFromIssuer(this.openIdConnectUrl);
             log('Fetched service configuration', response);
             this.configuration = response;
+            return response;
         } catch (error) {
             log('Something bad happened', error);
             log(`Something bad happened ${error}`);
