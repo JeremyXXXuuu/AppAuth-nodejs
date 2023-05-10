@@ -9,6 +9,8 @@ import { StringMap } from './types';
 import { NodeCrypto } from './crypto_utils';
 import { GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, TokenRequest } from './token_request';
 import { TokenError, TokenResponse } from './token_response';
+import opener = require('opener');
+
 class ServerEventsEmitter extends EventEmitter {
     static ON_UNABLE_TO_START = 'unable_to_start';
     static ON_AUTHORIZATION_RESPONSE = 'authorization_response';
@@ -165,9 +167,17 @@ export class Auth {
     }
 
     async fetchUserInfo(): Promise<JSON> {
+      if (!this.configuration) {
+        log("Unknown service configuration");
+        return;
+      }
+      if(!this.authState.isTokrnRequestComplete) {
+        log('Token request is not complete, cannot fetch user info');
+        return;
+      }
       const response = await this.performWithToken(async (accessToken) => {
         const request =
-        new Request('https://staging.auth.orosound.com/me', {
+        new Request(this.configuration.userInfoEndpoint, {
           headers: new Headers({ 'Authorization': `Bearer ${accessToken}` }),
           method: 'GET',
           cache: 'no-cache'
@@ -177,6 +187,12 @@ export class Auth {
         return json;
       });
       return response;
+    }
+
+    async logout(): Promise<void> {
+      this.authState.isAuthorizationComplete = false;
+      this.authState.isTokrnRequestComplete = false;
+      opener(this.configuration.endSessionEndpoint);
     }
 }
 
