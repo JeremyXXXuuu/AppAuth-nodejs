@@ -44,26 +44,6 @@ export class AuthorizationRequestHandler {
     protected crypto: Crypto = new NodeCrypto()
   ) {
     this.emitter = new ServerEventsEmitter();
-    this.authorizationPromise = new Promise<AuthorizationRequestResponse>((resolve, reject) => {
-      log("Authorization Flow pending .......");
-      this.emitter.once(ServerEventsEmitter.ON_UNABLE_TO_START, () => {
-        reject(`Unable to create HTTP server at port ${this.httpServerPort}`);
-      });
-      log('regestering ON_AUTHORIZATION_RESPONSE event');
-      this.emitter.once(ServerEventsEmitter.ON_AUTHORIZATION_RESPONSE, (result: unknown) => {
-        // Set timeout for the server connections to 1 ms as we wish to close and end the server
-        // as soon as possible. This prevents a user failing to close the redirect window from
-        // causing a hanging process due to the server.
-        this.server.setTimeout(1);
-        log("closing server");
-        this.server.close();
-        // resolve pending promise
-        resolve(result as AuthorizationRequestResponse);
-        // complete authorization flow
-        log("Authorization Flow complete")
-        this.completeAuthorizationRequestIfPossible();
-      });
-    });
   }
 
   async completeAuthorizationRequestIfPossible(): Promise<void> {
@@ -123,6 +103,29 @@ export class AuthorizationRequestHandler {
     configuration: AuthorizationServiceConfiguration,
     request: AuthorizationRequest,
   ): void {
+    this.emitter.emit(ServerEventsEmitter.ON_AUTHORIZATION_RESPONSE, null);
+
+    this.authorizationPromise = new Promise<AuthorizationRequestResponse>((resolve, reject) => {
+      log("Authorization Flow pending .......");
+      this.emitter.once(ServerEventsEmitter.ON_UNABLE_TO_START, () => {
+        reject(`Unable to create HTTP server at port ${this.httpServerPort}`);
+      });
+      log('regestering ON_AUTHORIZATION_RESPONSE event');
+      this.emitter.once(ServerEventsEmitter.ON_AUTHORIZATION_RESPONSE, (result: unknown) => {
+        // Set timeout for the server connections to 1 ms as we wish to close and end the server
+        // as soon as possible. This prevents a user failing to close the redirect window from
+        // causing a hanging process due to the server.
+        this.server.setTimeout(1);
+        log("closing server");
+        this.server.close();
+        // resolve pending promise
+        resolve(result as AuthorizationRequestResponse);
+        // complete authorization flow
+        log("Authorization Flow complete")
+        this.completeAuthorizationRequestIfPossible();
+      });
+    });
+
     const requestHandler = (
       httpRequest: Http.IncomingMessage,
       httpResponse: Http.ServerResponse
@@ -166,7 +169,7 @@ export class AuthorizationRequestHandler {
       httpResponse.setHeader("Content-Type", "text/html");
       // httpResponse.statusCode = 200;
       httpResponse.end("<html><body><h1>You can now close this window</h1></body></html>");
-      log("repsonse ent")
+      log("repsonse end")
     };
     request
       .setupCodeVerifier()
