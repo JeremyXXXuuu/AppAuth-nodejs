@@ -6,6 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",
+    "oro-test": "jest ./src/__tests__/auth.test.ts",
+    "google-test": "jest ./src/__tests__/auth_google.test.ts",
     "compile": "tsc",
     "build": "yarn compile",
     "clean": "rm -rf dist",
