@@ -61,21 +61,23 @@ describe('Google Auth tests', () => {
         expect(authFlow.authState.isAuthorizationComplete).toBe(true);
       });
 
-      // it("refreshAccessToken should work when access_token is not valid", async () => {
-      //   authFlow.tokenResponse.expiresIn = 1;
-      //   await authFlow.refreshAccessToken();
-      //   expect(authFlow.tokenResponse).toBeTruthy();
-      //   expect(authFlow.tokenResponse.refreshToken).toBeTruthy();
-      //   expect(authFlow.tokenResponse.accessToken).toBeTruthy();
-      //   expect(authFlow.tokenResponse.idToken).toBeTruthy();
-      //   expect(authFlow.tokenResponse.scope).toBe(scope);
-      //   expect(authFlow.authState.isAuthorizationComplete).toBe(true);
-      // });
+      it("refreshAccessToken should work when access_token is not valid", async () => {
+        authFlow.tokenResponse.expiresIn = 1;
+        const newAccessToken = await authFlow.refreshAccessToken();
+        expect(newAccessToken).toBeTruthy();
+        expect(authFlow.tokenResponse).toBeTruthy();
+        expect(authFlow.tokenResponse.refreshToken).toBeTruthy();
+        expect(authFlow.tokenResponse.accessToken).toBeTruthy();
+        expect(authFlow.tokenResponse.idToken).toBeTruthy();
+        expect(authFlow.tokenResponse.scope).toBe(scope);
+        expect(authFlow.authState.isAuthorizationComplete).toBe(true);
+      });
     });
 
     describe("User Info Request", () => {
       it("fetchUserInfo should work", async () => {
         const userInfo = await authFlow.fetchUserInfo();
+        console.log(userInfo);
         expect(userInfo).toBeTruthy();
       });
     });

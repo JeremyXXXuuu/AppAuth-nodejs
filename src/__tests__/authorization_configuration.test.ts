@@ -61,7 +61,7 @@ describe('Authorization Service Configuration tests', () => {
     });
 
     it('Fetch from real OP issuer tests should work', async () => {
-      const openIdConnectUrl = 'http://localhost:8001'||"https://staging.auth.orosound.com";
+      const openIdConnectUrl = "https://staging.auth.orosound.com";
       const result = await AuthorizationServiceConfiguration.fetchFromIssuer(openIdConnectUrl);
       expect(result).toBeTruthy();
       expect(result.authorizationEndpoint).toBeTruthy();

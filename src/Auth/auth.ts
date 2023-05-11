@@ -155,6 +155,12 @@ export class Auth {
       log('Refreshing access token', request);
       const response = await this.tokenRequestHandler.performTokenRequest(this.configuration, request);
       this.tokenResponse = response;
+      if (!this.tokenResponse.accessToken) {
+        throw new Error('No access token available, refresh AccessToken failed');
+      }
+      if (!this.tokenResponse.refreshToken) {
+        this.tokenResponse.refreshToken = request.refreshToken;
+      }
       log('Access Token is', this.tokenResponse.accessToken);
       return this.tokenResponse.accessToken;
     }
