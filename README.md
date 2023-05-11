@@ -63,7 +63,7 @@ authFlow.logout()
 ```
 ##### Whole Flow Examples
 ```typescript
-async function auth(){
+async function auth() {
     await authFlow.fetchServiceConfiguration();
     await authFlow.makeAuthRequest();
     await authFlow.makeTokenRequest();
@@ -75,4 +75,13 @@ async function auth(){
 ```bash
 IS_LOG = true
 ```
+### Test
+
+```bash
+// test orosound Oauth2 flow
+yarn oro-test
+// test google Oauth2 flow
+yarn google-test
+```
+
 
