@@ -174,7 +174,7 @@ export class Auth {
       }
     }
 
-    async fetchUserInfo(): Promise<JSON> {
+    async fetchUserInfo(): Promise<Object> {
       if (!this.configuration) {
         log("Unknown service configuration");
         return;
