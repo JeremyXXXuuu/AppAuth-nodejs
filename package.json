@@ -21,6 +21,7 @@
   "private": true,
   "devDependencies": {
     "@types/jest": "^29.5.1",
+    "@types/node-fetch": "^2.6.4",
     "@types/opener": "^1.4.0",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
@@ -32,6 +33,7 @@
   "dependencies": {
     "@types/jquery": "^3.5.16",
     "base64-js": "^1.5.1",
+    "node-fetch": "2",
     "opener": "^1.5.2"
   }
 }
