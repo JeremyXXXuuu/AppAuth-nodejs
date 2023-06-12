@@ -9,7 +9,7 @@ describe('Google Auth tests', () => {
     const responseType = "code";
     const extras: StringMap = { prompt: "consent"};
     const authFlow = new Auth(openIdConnectUrl, clientId, redirectUri, scope, responseType, extras);
-    authFlow.tokenRequest.clinetSecret = "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";
+    authFlow.tokenRequest.clientSecret = "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";
 
     it('Initialization should work', () => {
         expect(authFlow).toBeTruthy();

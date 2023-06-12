@@ -22,7 +22,7 @@ export interface TokenRequestJson {
  */
 export class TokenRequest {
     clientId: string;
-    clinetSecret: string|undefined;
+    clientSecret: string|undefined;
     redirectUri: string;
     grantType: string;
     code: string|undefined;
@@ -31,7 +31,7 @@ export class TokenRequest {
 
     constructor(request: TokenRequestJson) {
       this.clientId = request.client_id;
-      this.clinetSecret = request.client_secret;
+      this.clientSecret = request.client_secret;
       this.redirectUri = request.redirect_uri;
       this.grantType = request.grant_type;
       this.code = request.code;
@@ -49,7 +49,7 @@ export class TokenRequest {
         refresh_token: this.refreshToken,
         redirect_uri: this.redirectUri,
         client_id: this.clientId,
-        client_secret: this.clinetSecret,
+        client_secret: this.clientSecret,
         extras: this.extras
       };
     }
@@ -65,8 +65,8 @@ export class TokenRequest {
         map['code'] = this.code;
       }
 
-      if(this.clinetSecret) {
-        map['client_secret'] = this.clinetSecret;
+      if(this.clientSecret) {
+        map['client_secret'] = this.clientSecret;
       }
 
       if (this.refreshToken) {

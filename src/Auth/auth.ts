@@ -10,6 +10,7 @@ import { NodeCrypto } from './crypto_utils';
 import { GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, TokenRequest } from './token_request';
 import { TokenError, TokenResponse } from './token_response';
 import opener = require('opener');
+import fetch from 'node-fetch';
 
 class ServerEventsEmitter extends EventEmitter {
     static ON_UNABLE_TO_START = 'unable_to_start';
@@ -18,12 +19,12 @@ class ServerEventsEmitter extends EventEmitter {
 
 interface AuthState {
     isAuthorizationComplete: boolean;
-    isTokrnRequestComplete: boolean;
+    isTokenRequestComplete: boolean;
 }
 export class Auth {
     authState : AuthState = {
         isAuthorizationComplete: false,
-        isTokrnRequestComplete: false,
+        isTokenRequestComplete: false,
     };
 
     authorizationRequest: AuthorizationRequest;
@@ -125,13 +126,13 @@ export class Auth {
       const response = await this.tokenRequestHandler.performTokenRequest(this.configuration, this.tokenRequest);
       this.tokenResponse = response;
       log('Token response', this.tokenResponse);
-      this.authState.isTokrnRequestComplete = true;
+      this.authState.isTokenRequestComplete = true;
       log('Refresh token is', this.tokenResponse.refreshToken);
 
     }
 
     async refreshAccessToken(): Promise<string> {
-      if(!this.authState.isTokrnRequestComplete) {
+      if(!this.authState.isTokenRequestComplete) {
         log('Token request is not complete, cannot refresh access token');
         return;
       }
@@ -174,23 +175,24 @@ export class Auth {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/ban-types
     async fetchUserInfo(): Promise<Object> {
       if (!this.configuration) {
         log("Unknown service configuration");
         return;
       }
-      if(!this.authState.isTokrnRequestComplete) {
+      if(!this.authState.isTokenRequestComplete) {
         log('Token request is not complete, cannot fetch user info');
         return;
       }
       const response = await this.performWithToken(async (accessToken) => {
-        const request =
-        new Request(this.configuration.userInfoEndpoint, {
-          headers: new Headers({ 'Authorization': `Bearer ${accessToken}` }),
-          method: 'GET',
-          cache: 'no-cache'
+
+        const request_url = this.configuration.userInfoEndpoint.toString();
+
+        const response = await fetch(request_url, {
+          headers: { 'Authorization': `Bearer ${accessToken}` },
+          method: 'post',
         });
-        const response = await fetch(request);
         const json = await response.json();
         return json;
       });
@@ -199,7 +201,7 @@ export class Auth {
 
     async logout(): Promise<void> {
       this.authState.isAuthorizationComplete = false;
-      this.authState.isTokrnRequestComplete = false;
+      this.authState.isTokenRequestComplete = false;
       opener(this.configuration.endSessionEndpoint);
     }
 }

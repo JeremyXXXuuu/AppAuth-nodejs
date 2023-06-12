@@ -84,7 +84,7 @@ describe('Auth tests', () => {
       it("makeSignOutRequest should work", async () => {
         await authFlow.logout();
         expect(authFlow.authState.isAuthorizationComplete).toBe(false);
-        expect(authFlow.authState.isTokrnRequestComplete).toBe(false);
+        expect(authFlow.authState.isTokenRequestComplete).toBe(false);
       });
     });
 });
