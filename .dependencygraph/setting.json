@@ -1,0 +1,15 @@
+{
+  "entryFilePath": "dist\\index.js",
+  "alias": {
+    "*": "node_modules\\*"
+  },
+  "resolveExtensions": [
+    ".js",
+    ".jsx",
+    ".ts",
+    ".tsx",
+    ".vue",
+    ".scss",
+    ".less"
+  ]
+}

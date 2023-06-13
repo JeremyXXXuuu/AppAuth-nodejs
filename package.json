@@ -16,9 +16,19 @@
     "lint": "eslint -c .eslintrc --ext .ts ./src"
   },
   "repository": "https://github.com/orosound/auth-server",
-  "author": "Orosound <contact@orosound.com>",
+  "keywords": [
+    "orosound",
+    "sdk",
+    "appauth",
+    "OIDC",
+    "OAuth2",
+    "OIDC-client"
+  ],
+  "author": {
+    "name": "Jeremy XU",
+    "email": "jeremy.xu@orosound.com"
+  },
   "license": "UNLICENSED",
-  "private": true,
   "devDependencies": {
     "@types/jest": "^29.5.1",
     "@types/node-fetch": "^2.6.4",
