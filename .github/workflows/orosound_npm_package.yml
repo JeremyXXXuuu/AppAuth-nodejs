@@ -1,0 +1,28 @@
+# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
+# For more information see: https://help.github.com/actions/language-and-framework-guides/publishing-nodejs-packages
+
+name: Publish package to OROSOUND npm package
+
+on:
+  release:
+    types: [created]
+
+env:
+  NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+jobs:
+  publish-npm-package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: https://npm.pkg.github.com/
+          scope: "@orosound"
+      - run: yarn install --frozen-lockfile
+      - run: yarn build
+      - run: yarn publish
