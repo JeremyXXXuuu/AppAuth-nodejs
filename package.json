@@ -1,6 +1,6 @@
 {
-  "name": "sdk-appauth-nodejs",
-  "version": "0.1.0-beta",
+  "name": "@orosound/sdk-appauth-nodejs",
+  "version": "0.1.0",
   "description": "OIDC Client for nodejs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
