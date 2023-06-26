@@ -1,6 +1,6 @@
 ![](https://orosound-link.s3.eu-west-3.amazonaws.com/assets/banner_orosound.png)
 
-# sdk-appauth-js
+# auth_client_sdk_nodejs
 
 JavaScript client SDK for communicating with OAuth 2.0 and OpenID Connect providers.
 
@@ -11,10 +11,10 @@ other extensions (standard or otherwise) with the ability to handle additional
 parameters in all protocol requests and responses.
 ## Installation
 
-Install sdk-appauth-js with npm
+Install auth_client_sdk_nodejs with npm
 
 ```bash
-  yarn add @orosound/sdk-appauth-js
+  yarn add @orosound/auth_client_sdk_nodejs
 ```
 
 
@@ -25,7 +25,7 @@ https://github.com/orosound/electron-auth-demo
 
 Electron public client example:
 ```typescript
-import Auth from '@orosound/sdk-appauth-js';
+import Auth from '@orosound/auth_client_sdk_nodejs';
 
 const openIdConnectUrl = "https://staging.auth.orosound.com";
 const clientId = "foo";
