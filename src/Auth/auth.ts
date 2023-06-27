@@ -131,16 +131,16 @@ export class Auth {
 
     }
 
-    async refreshAccessToken(): Promise<string> {
-      if(!this.authState.isTokenRequestComplete) {
-        log('Token request is not complete, cannot refresh access token');
+    async refreshAccessToken(refreshToken?: string): Promise<string> {
+      if(!this.authState.isTokenRequestComplete && !refreshToken) {
+        log('Token request is not complete and no providing refreshToken, cannot refresh access token');
         return;
       }
       if (!this.configuration) {
         log("Unknown service configuration");
         return;
       }
-      if(!this.tokenResponse.refreshToken) {
+      if(!this.tokenResponse.refreshToken && !refreshToken) {
         log('Refresh token is not available, cannot refresh access token');
         return;
       }
@@ -150,7 +150,7 @@ export class Auth {
       }
       const request = this.tokenRequest;
       request.code = undefined;
-      request.refreshToken = this.tokenResponse.refreshToken;
+      request.refreshToken = refreshToken || this.tokenResponse.refreshToken;
       request.extras = undefined;
       request.grantType = GRANT_TYPE_REFRESH_TOKEN;
       log('Refreshing access token', request);
