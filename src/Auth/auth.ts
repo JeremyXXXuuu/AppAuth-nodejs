@@ -140,7 +140,7 @@ export class Auth {
         log("Unknown service configuration");
         return;
       }
-      if(!this.tokenResponse.refreshToken && !refreshToken) {
+      if(this.authState.isTokenRequestComplete && !this.tokenResponse.refreshToken && !refreshToken) {
         log('Refresh token is not available, cannot refresh access token');
         return;
       }

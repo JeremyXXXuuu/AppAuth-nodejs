@@ -68,6 +68,18 @@ describe('Auth tests', () => {
         expect(authFlow.tokenResponse.scope).toBe(scope);
         expect(authFlow.authState.isAuthorizationComplete).toBe(true);
       });
+
+      it("refreshAccessToken should work when refresh_token as param", async () => {
+        const newAuthFlow = new Auth(openIdConnectUrl, clientId, redirectUri, scope, responseType, extras);
+        await newAuthFlow.fetchServiceConfiguration();
+        const refreshToken = 'pru_cK_u7Wdb8kxoCiaaX7ycI2AjgOiyRjotMa3AEQF';
+        await newAuthFlow.refreshAccessToken(refreshToken);
+        expect(newAuthFlow.tokenResponse).toBeTruthy();
+        expect(newAuthFlow.tokenResponse.refreshToken).toBeTruthy();
+        expect(newAuthFlow.tokenResponse.accessToken).toBeTruthy();
+        expect(newAuthFlow.tokenResponse.idToken).toBeTruthy();
+        expect(newAuthFlow.tokenResponse.scope).toBe(scope);
+      });
     });
 
     describe("User Info Request", () => {
