@@ -148,11 +148,15 @@ export class Auth {
         log('Access token is still valid, no need to refresh');
         return this.tokenResponse.accessToken;
       }
-      const request = JSON.parse(JSON.stringify(this.tokenRequest));
-      request.code = undefined;
-      request.refreshToken = refreshToken || this.tokenResponse.refreshToken;
-      request.extras = undefined;
-      request.grantType = GRANT_TYPE_REFRESH_TOKEN;
+      const request = new TokenRequest({
+        client_id: this.tokenRequest.clientId,
+        client_secret: this.tokenRequest.clientSecret,
+        redirect_uri: this.tokenRequest.redirectUri,
+        grant_type: GRANT_TYPE_REFRESH_TOKEN,
+        code: undefined,
+        refresh_token: refreshToken || this.tokenResponse.refreshToken,
+        extras: undefined
+      });
       log('Refreshing access token', request);
       const response = await this.tokenRequestHandler.performTokenRequest(this.configuration, request);
       this.tokenResponse = response;
