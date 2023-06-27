@@ -148,7 +148,7 @@ export class Auth {
         log('Access token is still valid, no need to refresh');
         return this.tokenResponse.accessToken;
       }
-      const request = this.tokenRequest;
+      const request = JSON.parse(JSON.stringify(this.tokenRequest));
       request.code = undefined;
       request.refreshToken = refreshToken || this.tokenResponse.refreshToken;
       request.extras = undefined;
