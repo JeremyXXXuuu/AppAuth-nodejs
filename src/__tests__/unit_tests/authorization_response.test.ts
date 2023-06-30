@@ -1,4 +1,4 @@
-import { AuthorizationResponse, AuthorizationError } from '../Auth/authorization_response';
+import { AuthorizationResponse, AuthorizationError } from '../../Auth/authorization_response';
 
 describe('Authorization Response Tests', () => {
   const code = 'code';

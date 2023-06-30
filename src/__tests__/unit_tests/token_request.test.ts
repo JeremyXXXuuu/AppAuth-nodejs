@@ -1,5 +1,5 @@
-import { TokenRequest, GRANT_TYPE_AUTHORIZATION_CODE } from "../Auth/token_request";
-import {StringMap} from '../Auth/types';
+import { TokenRequest, GRANT_TYPE_AUTHORIZATION_CODE } from "../../Auth/token_request";
+import {StringMap} from '../../Auth/types';
 
 describe('Token Request tests', () => {
     const clientId = 'client_id';

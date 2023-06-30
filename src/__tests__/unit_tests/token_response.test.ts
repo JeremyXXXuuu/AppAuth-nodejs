@@ -1,4 +1,4 @@
-import { TokenResponse, TokenError } from '../Auth/token_response';
+import { TokenResponse, TokenError } from '../../Auth/token_response';
 
 describe('Token Response Tests', () => {
   const accessToken = 'access_token';
