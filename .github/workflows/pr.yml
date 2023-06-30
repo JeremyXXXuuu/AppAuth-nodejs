@@ -4,6 +4,8 @@ name: PR-build
 on:
   pull_request:
     branches: [ develop, master ]
+env:
+  NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
 jobs:
   build:
