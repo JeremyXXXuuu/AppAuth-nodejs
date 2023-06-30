@@ -1,3 +1,4 @@
 import { Auth } from "./Auth/auth";
+import { ElectronAuthClient } from "./electronAuth";
 
-export default Auth;
+export { Auth, ElectronAuthClient };
