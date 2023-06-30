@@ -1,5 +1,5 @@
-import { AuthorizationServiceConfiguration, AuthorizationServiceConfigurationJson } from '../Auth/authorization_service_configuration';
-import { Requestor } from '../Auth/xhr';
+import { AuthorizationServiceConfiguration, AuthorizationServiceConfigurationJson } from '../../Auth/authorization_service_configuration';
+import { Requestor } from '../../Auth/xhr';
 
 class TestRequestor extends Requestor {
   constructor(public promise: Promise<AuthorizationServiceConfigurationJson|any>) {

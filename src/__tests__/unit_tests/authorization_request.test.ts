@@ -1,5 +1,5 @@
-import { AuthorizationRequest, AuthorizationRequestJson } from "../Auth/authorization_request";
-import { StringMap } from "../Auth/types";
+import { AuthorizationRequest, AuthorizationRequestJson } from "../../Auth/authorization_request";
+import { StringMap } from "../../Auth/types";
 
 describe("Authorization Request Tests", () => {
     const clientId = 'client_id';

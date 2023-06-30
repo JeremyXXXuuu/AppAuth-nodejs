@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "jest",
+    "test": "jest ./src/__tests__/unit_tests",
     "oro-test": "jest ./src/__tests__/auth.test.ts",
     "google-test": "jest ./src/__tests__/auth_google.test.ts",
     "compile": "tsc",
