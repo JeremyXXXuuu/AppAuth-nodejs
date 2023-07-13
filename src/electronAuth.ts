@@ -143,9 +143,11 @@ export class ElectronAuthClient {
     await this.auth.refreshAccessToken();
   }
 
-  signOut(): void {
+  async signOut(): Promise<void> {
+    await this.auth.fetchServiceConfiguration();
     this.auth.logout();
     this.userInfo = null;
+    this.deleteLocalToken();
   }
 
   deleteLocalToken(): void {
