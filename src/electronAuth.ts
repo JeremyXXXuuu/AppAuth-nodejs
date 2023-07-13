@@ -148,4 +148,10 @@ export class ElectronAuthClient {
     this.auth.logout();
     this.userInfo = null;
   }
+
+  deleteLocalToken(): void {
+    this.persistToken.deleteToken('accessToken');
+    this.persistToken.deleteToken('refreshToken');
+    this.persistToken.deleteToken('idToken');
+  }
 }
