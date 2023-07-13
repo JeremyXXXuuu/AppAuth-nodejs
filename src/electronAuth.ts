@@ -57,12 +57,11 @@ export class ElectronAuthClient {
   private userInfo: UserInfo | null = null;
   private persistToken: PersistTokenAdapter;
   constructor(providers: Provider, persistToken: PersistTokenAdapter) {
-    // providers.forEach((provider) => {
-    //   const auth = new Auth(provider.openIdConnectUrl, provider.clientId, provider.redirectUri, provider.scope, provider.responseType, provider.extras);
-    //   this.Auths.push(auth);
-    // });
     this.auth = new Auth(providers.openIdConnectUrl, providers.clientId, providers.redirectUri, providers.scope, providers.responseType, providers.extras);
     this.persistToken = persistToken;
+  }
+
+  init(): void {
     const loacal_tokens = this.persistToken.getCredentials();
     if (loacal_tokens.length > 0) {
       log("Find local token, refresh token")
