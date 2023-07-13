@@ -21,7 +21,7 @@ Install auth_client_sdk_nodejs with npm
 ### Examples
 https://github.com/orosound/electron-auth-demo
 
-### Auth flow
+## Auth flow
 
 Electron public client example:
 ```typescript
@@ -71,6 +71,77 @@ async function auth() {
     console.log(authFlow.tokenResponse);
 }
 ```
+
+### Electron example
+
+`init()`: Check if there is a token in the local storage and if it is valid. If not, it will open a new window to start the auth flow.
+```typescript
+import { ElectronAuthClient } from '@orosound/auth_client_sdk_nodejs';;
+
+const auth_client = new ElectronAuthClient(oroProvider, persistToken);
+auth_client.signOut();
+auth_client.init();
+```
+#### Your provider config:
+```typescript
+const oroProvider = {
+	name: 'orosound',
+	openIdConnectUrl: 'https://staging.auth.orosound.com',
+	clientId: 'foo',
+	redirectUri: 'http://127.0.0.1:8000',
+	scope: 'openid name profile email offline_access',
+	responseType: 'code',
+	extras: { prompt: 'consent', access_type: 'offline' },
+}
+```
+#### Persist token:
+Persist token is an Adapter that you can implement to save your token in your local.
+```typescript
+interface PersistTokenAdapter {
+    setToken: (key: string, value: string) => void;
+    getToken: (key: string) => string;
+    deleteToken: (key: string) => void;
+    getCredentials: () => Array<{
+        key: string;
+        token: string;
+    }>;
+}
+```
+Here is an example of a persist token adapter with [`electron-store`](https://github.com/sindresorhus/electron-store) and [`Electron safeStorage`](https://www.electronjs.org/fr/docs/latest/api/safe-storage)
+```typescript
+import { safeStorage } from 'electron';
+import Store = require('electron-store');
+
+const store = new Store<Record<string, string>>({
+  name: 'ray-encrypted',
+  watch: true,
+  encryptionKey: 'this_only_obfuscates',
+});
+
+export default {
+  setToken(key: string, token: string) {
+    const buffer = safeStorage.encryptString(token);
+    store.set(key, buffer.toString('latin1'));
+  },
+
+  deleteToken(key: string) {
+    store.delete(key);
+  },
+
+  getCredentials(): Array<{ key: string; token: string }> {
+    return Object.entries(store.store).reduce((credentials, [key, buffer]) => {
+      return [...credentials, { key, token: safeStorage.decryptString(Buffer.from(buffer, 'latin1')) }];
+    }, [] as Array<{ key: string; token: string }>);
+  },
+
+  getToken(key: string): string {
+	const buffer = store.get(key);
+	return safeStorage.decryptString(Buffer.from(buffer, 'latin1'));
+  }
+};
+```
+
+
 ### LOG Mode
 ```bash
 IS_LOG = true
@@ -78,9 +149,11 @@ IS_LOG = true
 ### Test
 
 ```bash
-// test orosound Oauth2 flow
+# unit test
+yarn test
+# test orosound Oauth2 flow
 yarn oro-test
-// test google Oauth2 flow
+# test google Oauth2 flow
 yarn google-test
 ```
 

@@ -1,6 +1,6 @@
 {
   "name": "@orosound/auth_client_sdk_nodejs",
-  "version": "0.1.5",
+  "version": "0.2.0-beta.3",
   "description": "OIDC Client for nodejs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
