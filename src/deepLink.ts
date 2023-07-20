@@ -38,7 +38,7 @@ export class DeepLinkAuthClient {
   private userInfo: UserInfo | null = null;
   private persistToken: PersistTokenAdapter;
   private mainWindow: Electron.BrowserWindow | null = null;
-  constructor(providers: Provider, persistToken: PersistTokenAdapter, mainWindow: Electron.BrowserWindow | null) {
+  constructor(providers: Provider, persistToken: PersistTokenAdapter, mainWindow: Electron.BrowserWindow | null, protocol: string) {
     this.auth = new Auth(
       providers.openIdConnectUrl,
       providers.clientId,
@@ -49,7 +49,7 @@ export class DeepLinkAuthClient {
     );
     this.persistToken = persistToken;
     this.mainWindow = mainWindow;
-    this.deepLinking();
+    this.deepLinking(protocol);
   }
 
   init(): void {
@@ -136,9 +136,8 @@ export class DeepLinkAuthClient {
 
 
   async tokenFlow(url: string) {
+    log("Receive authorization response.");
     const parseUrl = new URL(url);
-    console.log(parseUrl.searchParams.get("code"));
-    console.log(parseUrl.searchParams.get("state"));
     this.auth.authorizationResponse = new AuthorizationResponse({
       code: parseUrl.searchParams.get("code"),
       state: parseUrl.searchParams.get("state"),
@@ -146,18 +145,19 @@ export class DeepLinkAuthClient {
     await this.auth.makeTokenRequest();
     await this.auth.refreshAccessToken();
     this.fetchUserInfo();
+    log("Token request complete, save token to local storage")
     this.persistToken.setToken("accessToken", this.getToken("accessToken"));
     this.persistToken.setToken("refreshToken", this.getToken("refreshToken"));
     this.persistToken.setToken("idToken", this.getToken("idToken"));
   }
   
-  deepLinking() {
+  deepLinking(protocol: string) {
     if (process.defaultApp) {
       if (process.argv.length >= 2) {
-        app.setAsDefaultProtocolClient('com.example.app', process.execPath, [path.resolve(process.argv[1])])
+        app.setAsDefaultProtocolClient(protocol, process.execPath, [path.resolve(process.argv[1])])
       }
     } else {
-      app.setAsDefaultProtocolClient('com.example.app')
+      app.setAsDefaultProtocolClient(protocol)
     }
   
     const gotTheLock = app.requestSingleInstanceLock()
