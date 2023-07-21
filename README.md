@@ -140,6 +140,34 @@ export default {
   }
 };
 ```
+### Electron Deep Link example
+
+```typescript
+import { DeepLinkAuthClient } from '@orosound/auth_client_sdk_nodejs'
+//note that the mainWindow is the BrowserWindow instance of your electron app
+const auth_client = new DeepLinkAuthClient(oro_provider, persistToken, mainWindow);
+
+// prevent multiple instances in Electron when using deep linking, see https://www.electronjs.org/docs/latest/api/app#apprequestsingleinstancelockadditionaldata
+const gotTheLock = app.requestSingleInstanceLock()
+if (!gotTheLock) {
+  app.quit()
+} else {
+  app.whenReady().then(() => {
+    //init the auth client
+    auth_client.init();
+    createWindow();
+    console.log(persistToken.getCredentials())
+    app.on("activate", function () {
+      // On macOS it's common to re-create a window in the app when the
+      // dock icon is clicked and there are no other windows open.
+      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
+  });
+}
+
+
+```
+
 
 
 ### LOG Mode
