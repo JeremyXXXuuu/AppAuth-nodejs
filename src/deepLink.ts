@@ -135,7 +135,7 @@ export class DeepLinkAuthClient {
   }
 
 
-  async tokenFlow(url: string) {
+  async tokenFlow(url: string): Promise<void> {
     log("Receive authorization response.");
     const parseUrl = new URL(url);
     this.auth.authorizationResponse = new AuthorizationResponse({
@@ -151,7 +151,7 @@ export class DeepLinkAuthClient {
     this.persistToken.setToken("idToken", this.getToken("idToken"));
   }
 
-  deepLinking(protocol: string) {
+  deepLinking(protocol: string): void {
     if (process.defaultApp) {
       if (process.argv.length >= 2) {
         app.setAsDefaultProtocolClient(protocol, process.execPath, [path.resolve(process.argv[1])])
