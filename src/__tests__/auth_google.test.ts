@@ -1,6 +1,11 @@
 import { Auth } from "../Auth/auth";
 import { StringMap } from "../Auth/types";
+import { Log } from '@orosound/log';
 
+const orolog = new Log();
+orolog.setupLog({
+  verbose: 5,
+});
 describe('Google Auth tests', () => {
     const openIdConnectUrl = 'https://accounts.google.com';
     const clientId = "659276355877-am8th2ah8s028ho58bnn8q48murgn878.apps.googleusercontent.com";
@@ -8,7 +13,7 @@ describe('Google Auth tests', () => {
     const scope = "openid profile";
     const responseType = "code";
     const extras: StringMap = { prompt: "consent"};
-    const authFlow = new Auth(openIdConnectUrl, clientId, redirectUri, scope, responseType, extras);
+    const authFlow = new Auth(openIdConnectUrl, clientId, redirectUri, scope, responseType, orolog, extras);
     authFlow.tokenRequest.clientSecret = "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";
 
     it('Initialization should work', () => {
