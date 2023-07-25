@@ -1,7 +1,7 @@
 import { TokenRequestHandler } from './token_request_handler';
 import { AuthorizationRequestHandler } from './authorization_request_handler';
 import { AuthorizationServiceConfiguration } from './authorization_service_configuration';
-import { log } from '../logger';
+import { Log, Logger } from '@orosound/log';
 import { EventEmitter } from 'events';
 import { AuthorizationRequest } from './authorization_request';
 import { AuthorizationResponse, AuthorizationError } from './authorization_response';
@@ -22,6 +22,8 @@ interface AuthState {
     isTokenRequestComplete: boolean;
 }
 export class Auth {
+    log : Logger;
+
     authState : AuthState = {
         isAuthorizationComplete: false,
         isTokenRequestComplete: false,
@@ -43,7 +45,8 @@ export class Auth {
     configuration: AuthorizationServiceConfiguration;
     emmiter: ServerEventsEmitter = new ServerEventsEmitter();
 
-    constructor(openIdConnectUrl: string, clientId: string, redirectUri: string, scope: string,  responseType: string, extras?: StringMap) {
+    constructor(openIdConnectUrl: string, clientId: string, redirectUri: string, scope: string,  responseType: string, log: Log, extras?: StringMap) {
+        this.log = log.logger('Auth');
         this.openIdConnectUrl = openIdConnectUrl;
         this.authorizationRequest = new AuthorizationRequest({
             client_id: clientId,
@@ -64,34 +67,33 @@ export class Auth {
           extras: undefined
         });
 
-        this.authorizationRequestHandler = new AuthorizationRequestHandler(8000, this.emmiter);
+        this.authorizationRequestHandler = new AuthorizationRequestHandler(8000, log);
         this.tokenRequestHandler = new TokenRequestHandler();
       }
 
 
 
     async fetchServiceConfiguration(): Promise<AuthorizationServiceConfiguration> {
-        log("Fetching service configuration", this.openIdConnectUrl)
+        this.log.verbose("Fetching service configuration",this.openIdConnectUrl);
         try {
             const response = await AuthorizationServiceConfiguration.fetchFromIssuer(this.openIdConnectUrl);
-            log('Fetched service configuration', response);
+            this.log.verbose('Fetched service configuration', JSON.stringify(response));
             this.configuration = response;
             return response;
         } catch (error) {
-            log('Something bad happened', error);
-            log(`Something bad happened ${error}`);
+            this.log.error('Something bad happened', JSON.stringify(error));
         }
       }
 
     async makeAuthRequest(): Promise<void> {
       if (!this.authorizationRequestHandler.authorizationPromise) {
-        log('Authorization request handler is not ready');
+        this.log.warn('Authorization request handler is not ready');
       }
       if (!this.configuration) {
-        log("Unknown service configuration");
+        this.log.warn("Unknown service configuration");
         return;
       }
-      log('Making authorization request', this.authorizationRequest);
+      this.log.verbose('Making authorization request', JSON.stringify(this.authorizationRequest));
       this.authorizationRequestHandler.performAuthorizationRequest(
         this.configuration,
         this.authorizationRequest,
@@ -104,12 +106,12 @@ export class Auth {
 
     async openAuthUrl(): Promise<void> {
       if (!this.authorizationRequest) {
-        log('Unknown authorization request');
+        this.log.warn('Unknown authorization request');
         return;
       }
       await this.authorizationRequest.setupCodeVerifier();
       const url = this.authorizationRequestHandler.buildRequestUrl(this.configuration, this.authorizationRequest);
-      log('Making authorization request', url);
+      this.log.verbose('Making authorization request', url);
       opener(url);
       this.authState.isAuthorizationComplete = true;
     }
@@ -120,11 +122,11 @@ export class Auth {
 
     async makeTokenRequest(): Promise<void> {
       if (!this.configuration) {
-        log("Unknown service configuration");
+        this.log.warn("Unknown service configuration");
         return;
       }
       if(!this.authState.isAuthorizationComplete) {
-        log('Authorization is not complete, cannot make token request');
+        this.log.warn('Authorization is not complete, cannot make token request');
         return;
       }
       let extras: StringMap|undefined = undefined;
@@ -134,30 +136,30 @@ export class Auth {
       }
       this.tokenRequest.code = this.authorizationResponse.code;
       this.tokenRequest.extras = extras;
-      log('Making token request', this.tokenRequest);
+      this.log.verbose('Making token request', JSON.stringify(this.tokenRequest));
       const response = await this.tokenRequestHandler.performTokenRequest(this.configuration, this.tokenRequest);
       this.tokenResponse = response;
-      log('Token response', this.tokenResponse);
+      this.log.verbose('Token response', JSON.stringify(this.tokenResponse));
       this.authState.isTokenRequestComplete = true;
-      log('Refresh token is', this.tokenResponse.refreshToken);
+      this.log.verbose('Refresh token is', this.tokenResponse.refreshToken);
 
     }
 
     async refreshAccessToken(refreshToken?: string): Promise<string> {
       if(!this.authState.isTokenRequestComplete && !refreshToken) {
-        log('Token request is not complete and no providing refreshToken, cannot refresh access token');
+        this.log.warn('Token request is not complete and no providing refreshToken, cannot refresh access token');
         return;
       }
       if (!this.configuration) {
-        log("Unknown service configuration");
+        this.log.warn("Unknown service configuration");
         return;
       }
       if(this.authState.isTokenRequestComplete && !this.tokenResponse.refreshToken && !refreshToken) {
-        log('Refresh token is not available, cannot refresh access token');
+        this.log.warn('Refresh token is not available, cannot refresh access token');
         return;
       }
       if(this.tokenResponse && this.tokenResponse.isValid()) {
-        log('Access token is still valid, no need to refresh');
+        this.log.verbose('Access token is still valid, no need to refresh');
         return this.tokenResponse.accessToken;
       }
       const request = new TokenRequest({
@@ -169,7 +171,7 @@ export class Auth {
         refresh_token: refreshToken || this.tokenResponse.refreshToken,
         extras: undefined
       });
-      log('Refreshing access token', request);
+      this.log.verbose('Refreshing access token', JSON.stringify(request));
       const response = await this.tokenRequestHandler.performTokenRequest(this.configuration, request);
       this.tokenResponse = response;
       if (!this.tokenResponse.accessToken) {
@@ -178,7 +180,7 @@ export class Auth {
       if (!this.tokenResponse.refreshToken) {
         this.tokenResponse.refreshToken = request.refreshToken;
       }
-      log('Access Token is', this.tokenResponse.accessToken);
+      this.log.verbose('Access Token is', this.tokenResponse.accessToken);
       return this.tokenResponse.accessToken;
     }
 
@@ -194,11 +196,11 @@ export class Auth {
     // eslint-disable-next-line @typescript-eslint/ban-types
     async fetchUserInfo(): Promise<Object> {
       if (!this.configuration) {
-        log("Unknown service configuration");
+        this.log.warn("Unknown service configuration");
         return;
       }
       if(!this.authState.isTokenRequestComplete) {
-        log('Token request is not complete, cannot fetch user info');
+        this.log.warn('Token request is not complete, cannot fetch user info');
         return;
       }
       const response = await this.performWithToken(async (accessToken) => {
@@ -221,4 +223,3 @@ export class Auth {
       opener(this.configuration.endSessionEndpoint);
     }
 }
-

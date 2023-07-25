@@ -1,5 +1,4 @@
 import {StringMap}            from './types';
-import {log}                  from '../logger';
 import {Crypto, DefaultCrypto} from './crypto_utils';
 /**
  * Represents an AuthorizationRequest as JSON.
@@ -68,7 +67,7 @@ export class AuthorizationRequest {
         const codeVerifier = this.crypto.generateRandom(128);
         const challenge: Promise<string|undefined> =
             this.crypto.deriveChallenge(codeVerifier).catch(error => {
-              log('Unable to generate PKCE challenge. Not using PKCE', error);
+              console.log('Unable to generate PKCE challenge. Not using PKCE', error);
               return undefined;
             });
         const result = await challenge;
