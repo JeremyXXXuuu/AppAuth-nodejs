@@ -1,11 +1,11 @@
 import { Auth }               from "./Auth/auth";
-import { log }                from "./logger";
 import { TokenResponse }      from "./Auth/token_response";
 import { StringMap }          from "./Auth/types";
 import {
     AuthorizationResponse }   from "./Auth/authorization_response";
 import { app }                from "electron";
 import * as path              from "path";
+import { Log, Logger } from "@orosound/log";
 
 interface UserInfo {
   name: string;
@@ -34,19 +34,22 @@ interface PersistTokenAdapter {
 }
 
 export class DeepLinkAuthClient {
+  private log: Logger;
   private auth: Auth;
   private userInfo: UserInfo | null = null;
   private persistToken: PersistTokenAdapter;
   private mainWindow: Electron.BrowserWindow | null = null;
-  constructor(providers: Provider, persistToken: PersistTokenAdapter, mainWindow: Electron.BrowserWindow | null, protocol: string) {
+  constructor(providers: Provider, persistToken: PersistTokenAdapter, mainWindow: Electron.BrowserWindow | null, protocol: string, log: Log) {
     this.auth = new Auth(
       providers.openIdConnectUrl,
       providers.clientId,
       providers.redirectUri,
       providers.scope,
       providers.responseType,
+      log,
       providers.extras
     );
+    this.log = log.logger("DeepLinkAuthClient");
     this.persistToken = persistToken;
     this.mainWindow = mainWindow;
     this.deepLinking(protocol);
@@ -56,29 +59,29 @@ export class DeepLinkAuthClient {
     this.auth.fetchServiceConfiguration().then(() => {
         const loacal_tokens = this.persistToken.getCredentials();
         if (loacal_tokens.length > 0) {
-          log("Find local token, refresh token");
+          this.log.verbose("Find local token, refresh token");
           this.handleLocalToken().then((success) => {
             if (!success) {
-              log("refresh token not valid or expired, need to Login again");
+              this.log.verbose("refresh token not valid or expired, need to Login again");
               this.authFlow();
-            } else log("handle local token complete");
+            } else this.log.verbose("handle local token complete");
           });
         } else {
-          log("No local token, init oro auth flow");
+          this.log.verbose("No local token, init oro auth flow");
           this.authFlow();
         }
     });
   }
 
   async authFlow(): Promise<void> {
-    log("start auth flow");
-    log("Service configuration fetched");
+    this.log.verbose("start auth flow");
+    this.log.verbose("Service configuration fetched");
     this.auth.openAuthUrl();
   }
 
   async handleLocalToken(): Promise<boolean> {
     const localRefreshToken = this.persistToken.getToken("refreshToken");
-    log(localRefreshToken);
+    this.log.verbose(localRefreshToken);
     //check if refresh token is expired
     try {
       await this.auth.refreshAccessToken(localRefreshToken);
@@ -87,26 +90,26 @@ export class DeepLinkAuthClient {
       this.persistToken.setToken("refreshToken", this.getToken("refreshToken"));
       this.persistToken.setToken("idToken", this.getToken("idToken"));
       const credentials = this.persistToken.getCredentials();
-      log("refreshAccessToken with local storage", credentials);
+      this.log.verbose("refreshAccessToken with local storage", JSON.stringify(credentials));
       this.fetchUserInfo();
       return true;
     } catch (error) {
       this.persistToken.deleteToken("accessToken");
       this.persistToken.deleteToken("refreshToken");
       this.persistToken.deleteToken("idToken");
-      log(error);
+      this.log.error(JSON.stringify(error));
       return false;
     }
   }
 
   fetchUserInfo(): Promise<UserInfo|void> {
     if (!this.auth.authState.isTokenRequestComplete) {
-      log("Token request not complete. Please sign in first");
+      this.log.verbose("Token request not complete. Please sign in first");
       return Promise.resolve();
     }
-    log("Fetching Oro user info");
+    this.log.verbose("Fetching Oro user info");
     return this.auth.fetchUserInfo().then((userInfo) => {
-      log("User Info ", userInfo);
+      this.log.verbose("User Info ", JSON.stringify(userInfo));
       this.userInfo = userInfo as UserInfo;
       return this.userInfo;
     });
@@ -120,7 +123,7 @@ export class DeepLinkAuthClient {
 
   getToken(key: string): string {
     if (!this.auth.authState.isTokenRequestComplete) {
-      log("Token request not complete. Please sign in first");
+      this.log.verbose("Token request not complete. Please sign in first");
       return;
     }
     if (key) {
@@ -136,7 +139,7 @@ export class DeepLinkAuthClient {
 
 
   async tokenFlow(url: string): Promise<void> {
-    log("Receive authorization response.");
+    this.log.verbose("Receive authorization response.");
     const parseUrl = new URL(url);
     this.auth.authorizationResponse = new AuthorizationResponse({
       code: parseUrl.searchParams.get("code"),
@@ -145,7 +148,7 @@ export class DeepLinkAuthClient {
     await this.auth.makeTokenRequest();
     await this.auth.refreshAccessToken();
     this.fetchUserInfo();
-    log("Token request complete, save token to local storage")
+    this.log.verbose("Token request complete, save token to local storage")
     this.persistToken.setToken("accessToken", this.getToken("accessToken"));
     this.persistToken.setToken("refreshToken", this.getToken("refreshToken"));
     this.persistToken.setToken("idToken", this.getToken("idToken"));
@@ -173,13 +176,13 @@ export class DeepLinkAuthClient {
         }
         redirectUri = commandLine.pop()
         // dialog.showErrorBox('Welcome Back windows', `You arrived from: ${commandLine.pop().slice(0, -1)}`)
-        log(redirectUri)
+        this.log.verbose(redirectUri)
         this.tokenFlow(redirectUri)
       })
       app.on('open-url', (event, url) => {
         // dialog.showErrorBox('Welcome Back mac/linux', `You arrived from: ${url}`)
         redirectUri = url
-        log(redirectUri)
+        this.log.verbose(redirectUri)
         this.tokenFlow(redirectUri)
       })
     }

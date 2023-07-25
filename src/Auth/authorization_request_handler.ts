@@ -5,7 +5,7 @@ import { AuthorizationRequest } from "./authorization_request";
 import { BasicQueryStringUtils } from "./query_string_utils";
 import { AuthorizationServiceConfiguration } from "./authorization_service_configuration";
 import { Crypto, NodeCrypto } from "./crypto_utils";
-import { log } from "../logger";
+import { Log, Logger } from '@orosound/log';
 import { EventEmitter } from "events";
 import { StringMap } from "./types";
 import { AuthorizationResponse, AuthorizationError } from "./authorization_response";
@@ -37,22 +37,24 @@ export class AuthorizationRequestHandler {
   authorizationPromise: Promise<AuthorizationRequestResponse|null>|null = null;
   emitter: ServerEventsEmitter|null = null;
   server: Http.Server|null = null;
+  log: Logger;
   constructor(
     public httpServerPort: number,
-    emitter: ServerEventsEmitter,
+    log: Log,
     public utils = new BasicQueryStringUtils(),
     protected crypto: Crypto = new NodeCrypto()
   ) {
     this.emitter = new ServerEventsEmitter();
+    this.log = log.logger('AuthorizationRequestHandler');
   }
 
   async completeAuthorizationRequestIfPossible(): Promise<void> {
     const result_1 = await this.completeAuthorizationRequest();
     if (!result_1) {
-      log(`No result is available yet.`);
+      this.log.verbose(`No result is available yet.`);
     }
     if (result_1) {
-      log(`Receive authorization response.`);
+      this.log.verbose(`Receive authorization response.`);
     }
   }
 
@@ -106,22 +108,22 @@ export class AuthorizationRequestHandler {
     this.emitter.emit(ServerEventsEmitter.ON_AUTHORIZATION_RESPONSE, null);
 
     this.authorizationPromise = new Promise<AuthorizationRequestResponse>((resolve, reject) => {
-      log("Authorization Flow pending .......");
+      this.log.verbose("Authorization Flow pending .......");
       this.emitter.once(ServerEventsEmitter.ON_UNABLE_TO_START, () => {
         reject(`Unable to create HTTP server at port ${this.httpServerPort}`);
       });
-      log('regestering ON_AUTHORIZATION_RESPONSE event');
+      this.log.verbose('regestering ON_AUTHORIZATION_RESPONSE event');
       this.emitter.once(ServerEventsEmitter.ON_AUTHORIZATION_RESPONSE, (result: unknown) => {
         // Set timeout for the server connections to 1 ms as we wish to close and end the server
         // as soon as possible. This prevents a user failing to close the redirect window from
         // causing a hanging process due to the server.
         this.server.setTimeout(1);
-        log("closing server");
+        this.log.verbose("closing server");
         this.server.close();
         // resolve pending promise
         resolve(result as AuthorizationRequestResponse);
         // complete authorization flow
-        log("Authorization Flow complete")
+        this.log.verbose("Authorization Flow complete")
         this.completeAuthorizationRequestIfPossible();
       });
     });
@@ -151,7 +153,7 @@ export class AuthorizationRequestHandler {
       //   httpResponse.end();
       //   return;
       // }
-      log("Handling Authorization Request ", query, requestState, code, error);
+      this.log.verbose("Handling Authorization Request ", JSON.stringify(query), requestState, code, error);
       let authorizationResponse: AuthorizationResponse|null = null;
       let authorizationError: AuthorizationError|null = null;
       if(query.error) {
@@ -164,26 +166,26 @@ export class AuthorizationRequestHandler {
         response: authorizationResponse,
         error: authorizationError
       };
-      log("emitted authorization response")
+      this.log.verbose("emitted authorization response")
       this.emitter.emit(ServerEventsEmitter.ON_AUTHORIZATION_RESPONSE, completeResponse);
       httpResponse.setHeader("Content-Type", "text/html");
       // httpResponse.statusCode = 200;
       httpResponse.end("<html><body><h1>You can now close this window</h1></body></html>");
-      log("repsonse end")
+      this.log.verbose("repsonse end")
     };
     request
       .setupCodeVerifier()
       .then(() => {
         this.server = Http.createServer(requestHandler);
-        log("Created HTTP server ")
+        this.log.verbose("Created HTTP server ")
         this.server.listen(this.httpServerPort);
         const url = this.buildRequestUrl(configuration, request);
-        log("Making a request to ", request, url);
+        this.log.verbose("Making a request to ", request, url);
         // open authorization request in external browser
         opener(url);
       })
       .catch((error) => {
-        log("Something bad happened ", error);
+        this.log.error("Something bad happened ", error);
         this.emitter.emit(ServerEventsEmitter.ON_UNABLE_TO_START);
       });
   }

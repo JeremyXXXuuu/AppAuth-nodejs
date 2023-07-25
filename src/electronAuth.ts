@@ -1,5 +1,5 @@
 import { Auth }               from "./Auth/auth";
-import { log }                from "./logger";
+import { Log, Logger }        from "@orosound/log";
 import { TokenResponse }      from "./Auth/token_response";
 import { StringMap }          from "./Auth/types";
 
@@ -53,33 +53,36 @@ interface PersistTokenAdapter {
 }
 
 export class ElectronAuthClient {
+  private log: Logger
   private auth: Auth;
   private userInfo: UserInfo | null = null;
   private persistToken: PersistTokenAdapter;
-  constructor(providers: Provider, persistToken: PersistTokenAdapter) {
-    this.auth = new Auth(providers.openIdConnectUrl, providers.clientId, providers.redirectUri, providers.scope, providers.responseType, providers.extras);
+  constructor(providers: Provider, persistToken: PersistTokenAdapter, log: Log) {
+    this.auth = new Auth(providers.openIdConnectUrl, providers.clientId, providers.redirectUri, providers.scope, providers.responseType, log, providers.extras);
     this.persistToken = persistToken;
+    this.log = log.logger('ElectronAuthClient');
   }
 
   init(): void {
+    this.log.info("init ElectronAuthClient");
     const loacal_tokens = this.persistToken.getCredentials();
     if (loacal_tokens.length > 0) {
-      log("Find local token, refresh token")
+      this.log.verbose("Find local token, refresh token")
       this.handleLocalToken().then((success) => {
         if (!success) {
-          log("refresh token not valid or expired, need to Login again")
+          this.log.verbose("refresh token not valid or expired, need to Login again")
           this.oroAuthFlow();
-        } else log("handle local token complete")
+        } else this.log.verbose("handle local token complete")
       });
     } else {
-      log("No local token, init oro auth flow")
+      this.log.verbose("No local token, init oro auth flow")
       this.oroAuthFlow();
     }
   }
 
   async handleLocalToken(): Promise<boolean> {
     const localRefreshToken = this.persistToken.getToken("refreshToken");
-    log(localRefreshToken);
+    this.log.verbose(localRefreshToken);
     //check if refresh token is expired
     await this.auth.fetchServiceConfiguration();
     try {
@@ -89,20 +92,20 @@ export class ElectronAuthClient {
       this.persistToken.setToken('refreshToken', this.getToken("refreshToken"));
       this.persistToken.setToken('idToken', this.getToken("idToken"));
       const credentials = this.persistToken.getCredentials();
-      log('refreshAccessToken with local storage', credentials);
+      this.log.verbose('refreshAccessToken with local storage', JSON.stringify(credentials));
       this.fetchUserInfo();
       return true;
     } catch (error) {
       this.persistToken.deleteToken('accessToken');
       this.persistToken.deleteToken('refreshToken');
       this.persistToken.deleteToken('idToken');
-      log(error);
+      this.log.error(JSON.stringify(error));
       return false;
     }
   }
 
   async oroAuthFlow(): Promise<void> {
-    log("start oro auth flow");
+    this.log.info("start oro auth flow");
     this.signIn().then(() => {
       this.fetchUserInfo();
       this.persistToken.setToken('accessToken', this.getToken("accessToken"));
@@ -114,7 +117,7 @@ export class ElectronAuthClient {
 
   getToken(key: string): string {
     if (!this.auth.authState.isTokenRequestComplete) {
-      log('Token request not complete. Please sign in first');
+      this.log.verbose('Token request not complete. Please sign in first');
       return;
     }
     if (key) {
@@ -124,12 +127,12 @@ export class ElectronAuthClient {
 
   fetchUserInfo(): void | UserInfo {
     if (!this.auth.authState.isTokenRequestComplete) {
-      log('Token request not complete. Please sign in first');
+      this.log.verbose('Token request not complete. Please sign in first');
       return;
     }
-    log('Fetching Oro user info')
+    this.log.verbose('Fetching Oro user info')
     this.auth.fetchUserInfo().then(userInfo => {
-      log('User Info ', userInfo);
+      this.log.verbose('User Info ', userInfo);
       this.userInfo = userInfo as UserInfo;
       return this.userInfo;
     });
@@ -137,7 +140,7 @@ export class ElectronAuthClient {
 
   async signIn(): Promise<void> {
     await this.auth.fetchServiceConfiguration();
-    log('Service configuration fetched');
+    this.log.verbose('Service configuration fetched');
     await this.auth.makeAuthRequest();
     await this.auth.makeTokenRequest();
     await this.auth.refreshAccessToken();
