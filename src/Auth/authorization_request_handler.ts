@@ -66,7 +66,7 @@ export class AuthorizationRequestHandler {
 
 
 
-  protected buildRequestUrl(
+  buildRequestUrl(
     configuration: AuthorizationServiceConfiguration,
     request: AuthorizationRequest
   ): string {

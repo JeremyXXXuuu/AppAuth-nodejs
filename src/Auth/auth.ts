@@ -102,6 +102,18 @@ export class Auth {
       this.authState.isAuthorizationComplete = true;
     }
 
+    async openAuthUrl(): Promise<void> {
+      if (!this.authorizationRequest) {
+        log('Unknown authorization request');
+        return;
+      }
+      await this.authorizationRequest.setupCodeVerifier();
+      const url = this.authorizationRequestHandler.buildRequestUrl(this.configuration, this.authorizationRequest);
+      log('Making authorization request', url);
+      opener(url);
+      this.authState.isAuthorizationComplete = true;
+    }
+
     getCode(): string {
       return this.authorizationResponse.code;
     }
