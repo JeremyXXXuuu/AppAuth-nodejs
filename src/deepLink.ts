@@ -2,7 +2,7 @@ import { Auth }               from "./Auth/auth";
 import { log }                from "./logger";
 import { TokenResponse }      from "./Auth/token_response";
 import { StringMap }          from "./Auth/types";
-import { 
+import {
     AuthorizationResponse }   from "./Auth/authorization_response";
 import { app }                from "electron";
 import * as path              from "path";
@@ -99,13 +99,13 @@ export class DeepLinkAuthClient {
     }
   }
 
-  fetchUserInfo(): void | UserInfo {
+  fetchUserInfo(): Promise<UserInfo|void> {
     if (!this.auth.authState.isTokenRequestComplete) {
       log("Token request not complete. Please sign in first");
-      return;
+      return Promise.resolve();
     }
     log("Fetching Oro user info");
-    this.auth.fetchUserInfo().then((userInfo) => {
+    return this.auth.fetchUserInfo().then((userInfo) => {
       log("User Info ", userInfo);
       this.userInfo = userInfo as UserInfo;
       return this.userInfo;
@@ -150,7 +150,7 @@ export class DeepLinkAuthClient {
     this.persistToken.setToken("refreshToken", this.getToken("refreshToken"));
     this.persistToken.setToken("idToken", this.getToken("idToken"));
   }
-  
+
   deepLinking(protocol: string) {
     if (process.defaultApp) {
       if (process.argv.length >= 2) {
@@ -159,7 +159,7 @@ export class DeepLinkAuthClient {
     } else {
       app.setAsDefaultProtocolClient(protocol)
     }
-  
+
     const gotTheLock = app.requestSingleInstanceLock()
     let redirectUri
     if (!gotTheLock) {
@@ -173,7 +173,7 @@ export class DeepLinkAuthClient {
         }
         redirectUri = commandLine.pop()
         // dialog.showErrorBox('Welcome Back windows', `You arrived from: ${commandLine.pop().slice(0, -1)}`)
-        log(redirectUri) 
+        log(redirectUri)
         this.tokenFlow(redirectUri)
       })
       app.on('open-url', (event, url) => {
