@@ -11,7 +11,7 @@ export interface QueryStringUtils {
 }
 
 export class BasicQueryStringUtils implements QueryStringUtils {
-  parse(input: LocationLike, useHash?: boolean) {
+  parse(input: LocationLike, useHash?: boolean): StringMap {
     if (useHash) {
       return this.parseQueryString(input.hash);
     } else {
@@ -20,16 +20,16 @@ export class BasicQueryStringUtils implements QueryStringUtils {
   }
 
   parseQueryString(query: string): StringMap {
-    let result: StringMap = {};
+    const result: StringMap = {};
     // if anything starts with ?, # or & remove it
     query = query.trim().replace(/^(\?|#|&)/, '');
-    let params = query.split('&');
+    const params = query.split('&');
     for (let i = 0; i < params.length; i += 1) {
-      let param = params[i];  // looks something like a=b
-      let parts = param.split('=');
+      const param = params[i];  // looks something like a=b
+      const parts = param.split('=');
       if (parts.length >= 2) {
-        let key = decodeURIComponent(parts.shift()!);
-        let value = parts.length > 0 ? parts.join('=') : null;
+        const key = decodeURIComponent(parts.shift());
+        const value = parts.length > 0 ? parts.join('=') : null;
         if (value) {
           result[key] = decodeURIComponent(value);
         }
@@ -38,10 +38,10 @@ export class BasicQueryStringUtils implements QueryStringUtils {
     return result;
   }
 
-  stringify(input: StringMap) {
-    let encoded: string[] = [];
-    for (let key in input) {
-      if (input.hasOwnProperty(key) && input[key]) {
+  stringify(input: StringMap): string {
+    const encoded: string[] = [];
+    for (const key in input) {
+      if (Object.prototype.hasOwnProperty.call(input,key) && input[key]) {
         encoded.push(`${encodeURIComponent(key)}=${encodeURIComponent(input[key])}`)
       }
     }
