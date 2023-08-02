@@ -23,7 +23,12 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: https://npm.pkg.github.com/
           scope: "@orosound"
-      - run: yarn install --frozen-lockfile
-      # build and test
-      - run: yarn build
-      - run: yarn test
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build and test
+        run: yarn build && yarn test
