@@ -1,13 +1,6 @@
 import { Auth } from "../Auth/auth";
 import { StringMap } from "../Auth/types";
 
-import { Log } from '@orosound/log';
-
-const orolog = new Log();
-orolog.setupLog({
-  verbose: 5,
-});
-
 describe('Auth tests', () => {
     const openIdConnectUrl = "https://staging.auth.orosound.com";
     const clientId = "foo";
@@ -15,7 +8,7 @@ describe('Auth tests', () => {
     const scope = "openid profile email offline_access";
     const responseType = "code";
     const extras: StringMap = { prompt: "consent", access_type: "offline_access" };
-    const authFlow = new Auth(openIdConnectUrl, clientId, redirectUri, scope, responseType, orolog, extras);
+    const authFlow = new Auth(openIdConnectUrl, clientId, redirectUri, scope, responseType, extras);
 
     it('Initialization should work', () => {
         expect(authFlow).toBeTruthy();
@@ -77,7 +70,7 @@ describe('Auth tests', () => {
       });
 
       it("refreshAccessToken should work when refresh_token as param", async () => {
-        const newAuthFlow = new Auth(openIdConnectUrl, clientId, redirectUri, scope, responseType, orolog, extras);
+        const newAuthFlow = new Auth(openIdConnectUrl, clientId, redirectUri, scope, responseType, extras);
         await newAuthFlow.fetchServiceConfiguration();
         const refreshToken = 'pru_cK_u7Wdb8kxoCiaaX7ycI2AjgOiyRjotMa3AEQF';
         await newAuthFlow.refreshAccessToken(refreshToken);

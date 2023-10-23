@@ -1,8 +1,7 @@
 import { Auth }               from "./Auth/auth";
-import { Log, Logger }        from "@orosound/log";
+import { Logger }        from "@orosound/log";
 import { TokenResponse }      from "./Auth/token_response";
 import { StringMap }          from "./Auth/types";
-
 // //---------------------------------------------------------------------
 // const oroProvider = {
 // 	name: 'orosound',
@@ -53,14 +52,13 @@ interface PersistTokenAdapter {
 }
 
 export class ElectronAuthClient {
-  private log: Logger
+  private log: Logger = new Logger('ElectronAuthClient');
   private auth: Auth;
   private userInfo: UserInfo | null = null;
   private persistToken: PersistTokenAdapter;
-  constructor(providers: Provider, persistToken: PersistTokenAdapter, log: Log) {
-    this.auth = new Auth(providers.openIdConnectUrl, providers.clientId, providers.redirectUri, providers.scope, providers.responseType, log, providers.extras);
+  constructor(providers: Provider, persistToken: PersistTokenAdapter) {
+    this.auth = new Auth(providers.openIdConnectUrl, providers.clientId, providers.redirectUri, providers.scope, providers.responseType, providers.extras);
     this.persistToken = persistToken;
-    this.log = log.logger('ElectronAuthClient');
   }
 
   init(): void {
