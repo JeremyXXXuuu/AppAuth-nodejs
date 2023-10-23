@@ -5,7 +5,7 @@ import { AuthorizationRequest } from "./authorization_request";
 import { BasicQueryStringUtils } from "./query_string_utils";
 import { AuthorizationServiceConfiguration } from "./authorization_service_configuration";
 import { Crypto, NodeCrypto } from "./crypto_utils";
-import { Log, Logger } from '@orosound/log';
+import { Logger } from '@orosound/log';
 import { EventEmitter } from "events";
 import { StringMap } from "./types";
 import { AuthorizationResponse, AuthorizationError } from "./authorization_response";
@@ -37,15 +37,13 @@ export class AuthorizationRequestHandler {
   authorizationPromise: Promise<AuthorizationRequestResponse|null>|null = null;
   emitter: ServerEventsEmitter|null = null;
   server: Http.Server|null = null;
-  log: Logger;
+  log: Logger = new Logger('AuthorizationRequestHandler');
   constructor(
     public httpServerPort: number,
-    log: Log,
     public utils = new BasicQueryStringUtils(),
     protected crypto: Crypto = new NodeCrypto()
   ) {
     this.emitter = new ServerEventsEmitter();
-    this.log = log.logger('AuthorizationRequestHandler');
   }
 
   async completeAuthorizationRequestIfPossible(): Promise<void> {

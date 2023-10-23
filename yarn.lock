@@ -616,10 +616,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@orosound/log@^2.0.2":
-  version "2.0.2"
-  resolved "https://npm.pkg.github.com/download/@orosound/log/2.0.2/ca0abcae4ed57bbdc3a8e47dad2b2789c3ea9f32#ca0abcae4ed57bbdc3a8e47dad2b2789c3ea9f32"
-  integrity sha512-mU/mHVCSI+rJesfIxYXVmnN+H0DRj2DRv8WEbwT5UiFJQ3doTOdcN7RMVntzGGG6CbGxr8Rg9XkGbHqHAlSGMA==
+"@orosound/log@^2.1.0":
+  version "2.1.0"
+  resolved "https://npm.pkg.github.com/download/@orosound/log/2.1.0/6d83f20efb837e0b5b7f0633249aad876bd21bd9#6d83f20efb837e0b5b7f0633249aad876bd21bd9"
+  integrity sha512-iYeWC1s53Z5kb8S/DFxtZGZWoQlNGCCxSrEGFj8PlKHJBFVlvybkrvRMyy1VIq+FVScVOQZCHVMvpPLlxFMo9Q==
   dependencies:
     dotenv "^16.0.3"
 
