@@ -75,10 +75,10 @@ async function auth() {
 ### Electron Deep Link example
 
 ```typescript
-import { DeepLinkAuthClient } from '@orosound/auth_client_sdk_nodejs'
+import { AuthClient } from '@orosound/auth_client_sdk_nodejs'
 //note that the mainWindow is the BrowserWindow instance of your electron app
 //note that the protocol is the protocol you want to use for the deep linking
-const auth_client = new DeepLinkAuthClient(oro_provider, persistToken, mainWindow, protocol, log);
+const auth_client = new AuthClient(oro_provider, persistToken, mainWindow, protocol, log);
 
 // prevent multiple instances in Electron when using deep linking, see https://www.electronjs.org/docs/latest/api/app#apprequestsingleinstancelockadditionaldata
 const gotTheLock = app.requestSingleInstanceLock()
@@ -104,9 +104,9 @@ if (!gotTheLock) {
 
 `init()`: Check if there is a token in the local storage and if it is valid. If not, it will open a new window to start the auth flow.
 ```typescript
-import { ElectronAuthClient } from '@orosound/auth_client_sdk_nodejs';;
+import { AppAuthClient } from '@orosound/auth_client_sdk_nodejs';;
 
-const auth_client = new ElectronAuthClient(oroProvider, persistToken);
+const auth_client = new AppAuthClient(oroProvider, persistToken);
 auth_client.signOut();
 auth_client.init();
 ```

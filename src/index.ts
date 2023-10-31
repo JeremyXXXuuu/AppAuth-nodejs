@@ -1,6 +1,6 @@
 import { Auth } from "./Auth/auth";
-import { ElectronAuthClient } from "./electronAuth";
-import { DeepLinkAuthClient } from "./deepLink";
+import { AppAuthClient } from "./deepLink";
+import { AuthClient } from "./authClient";
 import { Criticity, Log } from "@orosound/log";
 
 /** Set log file path *********************************************************/
@@ -11,4 +11,4 @@ Log.setupLog({
   path: "./logs",
 });
 
-export { Auth, ElectronAuthClient, DeepLinkAuthClient };
+export { Auth, AppAuthClient, AuthClient };
