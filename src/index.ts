@@ -1,5 +1,5 @@
 import { Auth } from "./Auth/auth";
-import { AppAuthClient } from "./deepLink";
+import { AppAuthClient } from "./appAuthClient";
 import { AuthClient } from "./authClient";
 import { Criticity, Log } from "@orosound/log";
 
