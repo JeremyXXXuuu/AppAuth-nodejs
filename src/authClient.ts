@@ -4,8 +4,6 @@ import { Auth } from "./Auth/auth";
 import { TokenResponse } from "./Auth/token_response";
 import { StringMap } from "./Auth/types";
 import { AuthorizationResponse } from "./Auth/authorization_response";
-import { app } from "electron";
-import * as path from "path";
 import { Logger } from "@orosound/log";
 
 interface UserInfo {
@@ -39,12 +37,11 @@ export class AuthClient {
   private auth: Auth;
   private userInfo: UserInfo | null = null;
   private persistToken: PersistTokenAdapter;
-  private mainWindow: Electron.BrowserWindow | null = null;
-  constructor(
+
+  public constructor(
     providers: Provider,
     persistToken: PersistTokenAdapter,
-    mainWindow: Electron.BrowserWindow | null,
-    protocol: string,
+
   ) {
     this.auth = new Auth(
       providers.openIdConnectUrl,
@@ -55,11 +52,9 @@ export class AuthClient {
       providers.extras,
     );
     this.persistToken = persistToken;
-    this.mainWindow = mainWindow;
-    this.deepLinking(protocol);
   }
 
-  init(): void {
+  public init(): void {
     this.auth.fetchServiceConfiguration().then(() => {
       const loacal_tokens = this.persistToken.getCredentials();
       if (loacal_tokens.length > 0) {
@@ -79,13 +74,13 @@ export class AuthClient {
     });
   }
 
-  async authFlow(): Promise<void> {
+  public async authFlow(): Promise<void> {
     this.log.verbose("start auth flow");
     this.log.verbose("Service configuration fetched");
     this.auth.openAuthUrl();
   }
 
-  async handleLocalToken(): Promise<boolean> {
+  public async handleLocalToken(): Promise<boolean> {
     const localRefreshToken = this.persistToken.getToken("refreshToken");
     this.log.verbose(localRefreshToken);
     //check if refresh token is expired
@@ -111,26 +106,25 @@ export class AuthClient {
     }
   }
 
-  fetchUserInfo(): Promise<UserInfo | void> {
+  public async fetchUserInfo(): Promise<UserInfo | void> {
     if (!this.auth.authState.isTokenRequestComplete) {
       this.log.verbose("Token request not complete. Please sign in first");
       return Promise.resolve();
     }
     this.log.verbose("Fetching Oro user info");
-    return this.auth.fetchUserInfo().then((userInfo) => {
-      this.log.verbose("User Info ", JSON.stringify(userInfo));
-      this.userInfo = userInfo as UserInfo;
-      return this.userInfo;
-    });
+    const userInfo = await this.auth.fetchUserInfo();
+    this.log.verbose("User Info ", JSON.stringify(userInfo));
+    this.userInfo = userInfo as UserInfo;
+    return this.userInfo;
   }
 
-  async signOut(): Promise<void> {
+  public async signOut(): Promise<void> {
     this.auth.logout();
     this.userInfo = null;
     this.deleteLocalToken();
   }
 
-  getToken(key: string): string {
+  public getToken(key: string): string {
     if (!this.auth.authState.isTokenRequestComplete) {
       this.log.verbose("Token request not complete. Please sign in first");
       return;
@@ -140,61 +134,23 @@ export class AuthClient {
     }
   }
 
-  deleteLocalToken(): void {
+  public deleteLocalToken(): void {
     this.persistToken.deleteToken("accessToken");
     this.persistToken.deleteToken("refreshToken");
     this.persistToken.deleteToken("idToken");
   }
 
-  async tokenFlow(url: string): Promise<void> {
+  public async tokenFlow(code: string, state: string): Promise<void> {
     this.log.verbose("Receive authorization response.");
-    const parseUrl = new URL(url);
     this.auth.authorizationResponse = new AuthorizationResponse({
-      code: parseUrl.searchParams.get("code"),
-      state: parseUrl.searchParams.get("state"),
+      code,
+      state
     });
     await this.auth.makeTokenRequest();
     await this.auth.refreshAccessToken();
-    this.fetchUserInfo();
     this.log.verbose("Token request complete, save token to local storage");
     this.persistToken.setToken("accessToken", this.getToken("accessToken"));
     this.persistToken.setToken("refreshToken", this.getToken("refreshToken"));
     this.persistToken.setToken("idToken", this.getToken("idToken"));
-  }
-
-  deepLinking(protocol: string): void {
-    if (process.defaultApp) {
-      if (process.argv.length >= 2) {
-        app.setAsDefaultProtocolClient(protocol, process.execPath, [
-          path.resolve(process.argv[1]),
-        ]);
-      }
-    } else {
-      app.setAsDefaultProtocolClient(protocol);
-    }
-
-    const gotTheLock = app.requestSingleInstanceLock();
-    let redirectUri;
-    if (!gotTheLock) {
-      app.quit();
-    } else {
-      app.on("second-instance", (_event, commandLine, _workingDirectory) => {
-        // Someone tried to run a second instance, we should focus our window.
-        if (this.mainWindow) {
-          if (this.mainWindow.isMinimized()) this.mainWindow.restore();
-          this.mainWindow.focus();
-        }
-        redirectUri = commandLine.pop();
-        // dialog.showErrorBox('Welcome Back windows', `You arrived from: ${commandLine.pop().slice(0, -1)}`)
-        this.log.verbose(redirectUri);
-        this.tokenFlow(redirectUri);
-      });
-      app.on("open-url", (event, url) => {
-        // dialog.showErrorBox('Welcome Back mac/linux', `You arrived from: ${url}`)
-        redirectUri = url;
-        this.log.verbose(redirectUri);
-        this.tokenFlow(redirectUri);
-      });
-    }
   }
 }
