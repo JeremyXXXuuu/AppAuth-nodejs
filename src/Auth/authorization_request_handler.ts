@@ -37,7 +37,7 @@ export class AuthorizationRequestHandler {
   authorizationPromise: Promise<AuthorizationRequestResponse|null>|null = null;
   emitter: ServerEventsEmitter|null = null;
   server: Http.Server|null = null;
-  log: Logger = new Logger('AuthorizationRequestHandler');
+  log: Logger = new Logger('AUTHORIZATION_REQUEST_HANDLER');
   constructor(
     public httpServerPort: number,
     public utils = new BasicQueryStringUtils(),

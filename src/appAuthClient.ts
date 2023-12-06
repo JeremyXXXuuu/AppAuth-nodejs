@@ -54,7 +54,7 @@ interface PersistTokenAdapter {
 }
 
 export class AppAuthClient {
-  private log: Logger = new Logger('AppAuthClient');
+  private log: Logger = new Logger('APP_AUTH_CLIENT');
   private auth: Auth;
   private userInfo: UserInfo | null = null;
   private persistToken: PersistTokenAdapter;

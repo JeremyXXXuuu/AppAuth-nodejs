@@ -29,7 +29,7 @@ interface AuthState {
   isTokenRequestComplete: boolean;
 }
 export class Auth {
-  log: Logger = new Logger("Auth");
+  log: Logger = new Logger("AUTH");
 
   authState: AuthState = {
     isAuthorizationComplete: false,

@@ -33,7 +33,7 @@ interface PersistTokenAdapter {
 }
 
 export class AuthClient {
-  private log: Logger = new Logger("AuthClient");
+  private log: Logger = new Logger("AUTH_CLIENT");
   private auth: Auth;
   private userInfo: UserInfo | null = null;
   private persistToken: PersistTokenAdapter;
